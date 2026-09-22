@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>自动填写助手测试页</title>
+    <style>
+      :root { font-family: Inter, ui-sans-serif, system-ui, "PingFang SC", sans-serif; color: #17231c; background: #eff5f1; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 32px; }
+      main { width: min(720px, 100%); padding: 34px; border-radius: 24px; background: white; box-shadow: 0 18px 60px rgba(22, 63, 39, .12); }
+      h1 { margin: 0 0 8px; }
+      p { color: #66736a; }
+      form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 28px; }
+      label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; }
+      label.wide { grid-column: 1 / -1; }
+      input, select { padding: 12px; font: inherit; border: 1px solid #d8e1db; border-radius: 10px; outline: none; }
+      input:focus, select:focus { border-color: #238054; box-shadow: 0 0 0 3px #e2f2e9; }
+      button { grid-column: 1 / -1; padding: 13px; color: white; font-weight: 750; border: 0; border-radius: 11px; background: #176b43; }
+      .experience-section { grid-column: 1 / -1; display: grid; gap: 12px; margin-top: 16px; }
+      .experience-section h2 { margin: 0; font-size: 18px; }
+      fieldset { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 0; padding: 18px; border: 1px solid #d8e1db; border-radius: 12px; }
+      fieldset legend { padding: 0 8px; font-weight: 750; }
+      fieldset .wide { grid-column: 1 / -1; }
+      textarea { min-height: 80px; padding: 12px; font: inherit; border: 1px solid #d8e1db; border-radius: 10px; resize: vertical; }
+      .add-record { background: #e7f2eb; color: #176b43; }
+      [data-demo-record] { position: fixed; right: 12px; z-index: 20; width: 170px; padding: 9px; font-size: 11px; box-shadow: 0 3px 12px #0002; }
+      [data-demo-record="educations"][data-demo-index="0"] { top: 14px; }
+      [data-demo-record="educations"][data-demo-index="1"] { top: 58px; }
+      [data-demo-record="workExperiences"] { top: 102px; }
+      [data-demo-record="projects"] { top: 146px; }
+      [data-demo-record="familyMembers"] { top: 190px; }
+      [data-personal-autofill="filled"] { background: #effaf4; }
+      @media (max-width: 600px) { form, fieldset { grid-template-columns: 1fr; } label.wide, fieldset .wide { grid-column: auto; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>报名信息</h1>
+      <p>测试一键填写与逐条选择：先在下方新增表单，再从插件中点击对应经历或家庭成员。</p>
+      <form>
+        <label>姓<input name="family_name" autocomplete="family-name" /></label>
+        <label>名<input name="given_name" autocomplete="given-name" /></label>
+        <label class="wide"><span aria-hidden="true">*姓　名</span><input id="contact-name" placeholder="请输入姓名" aria-label="姓名" /></label>
+        <label>昵称<input name="nickname" autocomplete="nickname" /></label>
+        <label><span aria-hidden="true">*性　别</span>
+          <select name="gender" autocomplete="sex">
+            <option value="">请选择</option><option>男</option><option>女</option><option>其他</option>
+          </select>
+        </label>
+        <label>出生日期<input type="date" name="birth_date" autocomplete="bday" /></label>
+        <label>个人主页<input type="url" name="personal_website" autocomplete="url" /></label>
+        <label><span aria-hidden="true">*邮　箱</span><input type="email" name="work_email" /></label>
+        <label>手机号码<input type="tel" name="mobile" /></label>
+        <label><span aria-hidden="true">*证件类型</span>
+          <select name="document_kind">
+            <option value="">请选择</option><option>身份证</option><option>护照</option><option>其他</option>
+          </select>
+        </label>
+        <label><span aria-hidden="true">*证 件 号 码</span><input name="document_value" /></label>
+        <label>公司<input name="organization" autocomplete="organization" /></label>
+        <label>部门<input name="department" /></label>
+        <label>职位<input name="job_title" /></label>
+        <label class="wide">详细地址<input name="shipping_address_line_1" autocomplete="address-line1" /></label>
+        <label>城市<input name="city" autocomplete="address-level2" /></label>
+        <label>省 / 州<input name="province" autocomplete="address-level1" /></label>
+        <label>邮政编码<input name="zip_code" autocomplete="postal-code" /></label>
+        <label>国家 / 地区
+          <select name="country" autocomplete="country-name">
+            <option value="">请选择</option><option>中国</option><option>新加坡</option><option>美国</option>
+          </select>
+        </label>
+        <label>微信号<input name="wechat_id" placeholder="请输入 WeChat ID" /></label>
+        <label>员工编号<input name="employee_number" /></label>
+        <label>密码（不会填写）<input type="password" name="password" /></label>
+        <label>银行卡号（不会填写）<input name="credit_card_number" /></label>
+
+        <section class="experience-section" data-autofill-section="education">
+          <h2>教育经历</h2>
+          <div data-records>
+            <fieldset data-autofill-record data-record-kind="highSchool">
+              <legend>高中教育经历</legend>
+              <label><span data-school-label>高中毕业院校</span><input name="education_school_1" /></label>
+              <label>学历阶段<select name="education_level_1"><option value="">请选择</option><option>高中</option><option>大专</option><option>本科</option><option>硕士</option><option>博士</option></select></label>
+              <label>主修专业<input name="education_major_1" /></label>
+              <label>学院 / 院系<input name="education_college_1" /></label>
+              <label>入学时间<input type="month" name="education_start_1" /></label>
+              <label>毕业时间<input type="month" name="education_end_1" /></label>
+              <label class="wide">在校经历<textarea name="education_description_1"></textarea></label>
+            </fieldset>
+          </div>
+          <button class="add-record" type="button" data-add-demo-record="higherEducation">新增其他高校教育经历</button>
+          <button class="add-record" type="button" data-add-demo-record="highSchool">新增其他高中教育经历</button>
+        </section>
+
+        <section class="experience-section" data-autofill-section="work">
+          <h2>工作经历</h2>
+          <div data-records>
+            <fieldset data-autofill-record>
+              <legend>工作经历 1</legend>
+              <label>工作单位<input name="work_company_1" /></label>
+              <label>工作岗位<input name="work_position_1" /></label>
+              <label>工作地点<input name="work_location_1" /></label>
+              <label>工作形式<select name="work_type_1"><option value="">请选择</option><option>全职</option><option>实习</option><option>兼职</option></select></label>
+              <label>开始时间<input type="month" name="work_start_1" /></label>
+              <label>结束时间<input type="month" name="work_end_1" /></label>
+              <label class="wide">工作内容<textarea name="work_description_1"></textarea></label>
+              <label class="wide">工作业绩<textarea name="work_achievement_1"></textarea></label>
+            </fieldset>
+          </div>
+          <button class="add-record" type="button" data-add-demo-record>新增工作经历</button>
+        </section>
+
+        <section class="experience-section" data-autofill-section="project">
+          <h2>项目经历</h2>
+          <div data-records>
+            <fieldset data-autofill-record>
+              <legend>项目经历 1</legend>
+              <label>项目名称<input name="project_name_1" /></label>
+              <label>项目角色<input name="project_role_1" /></label>
+              <label>开始时间<input type="date" name="project_start_1" /></label>
+              <label>结束时间<input type="date" name="project_end_1" /></label>
+              <label class="wide">项目描述<textarea name="project_description_1"></textarea></label>
+              <label class="wide">项目成果<textarea name="project_achievement_1"></textarea></label>
+            </fieldset>
+          </div>
+          <button class="add-record" type="button" data-add-demo-record>新增项目经历</button>
+        </section>
+        <section class="experience-section" data-autofill-section="family">
+          <h2>家庭成员</h2>
+          <div data-records>
+            <fieldset data-autofill-record>
+              <legend>家庭成员 1</legend>
+              <label>亲属姓名<input name="relative_name_1" /></label>
+              <label>与本人关系<select name="relationship_1"><option value="">请选择</option><option>父亲</option><option>母亲</option><option>配偶</option><option>其他</option></select></label>
+              <label>出生日期<input type="date" name="relative_birth_date_1" /></label>
+              <label>性别<select name="relative_gender_1"><option value="">请选择</option><option>男</option><option>女</option></select></label>
+              <label>是否移动系统内任职<select name="relative_works_in_system_1"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+              <label>亲属工作单位<input name="relative_employer_1" /></label>
+              <label>亲属职位<input name="relative_position_1" /></label>
+              <label>联系电话<input name="relative_phone_1" /></label>
+              <label>政治面貌<input name="relative_political_status_1" /></label>
+              <label>现居住地址<input name="relative_current_address_1" /></label>
+            </fieldset>
+          </div>
+          <button class="add-record" type="button" data-add-demo-record>新增家庭成员</button>
+        </section>
+        <button class="add-record" type="button" data-demo-fill>使用内置示例填写个人信息</button>
+        <button class="add-record" type="button" data-demo-record="educations" data-demo-index="0">测试：填入本科经历</button>
+        <button class="add-record" type="button" data-demo-record="educations" data-demo-index="1">测试：填入高中经历</button>
+        <button class="add-record" type="button" data-demo-record="workExperiences">测试：填入实习经历</button>
+        <button class="add-record" type="button" data-demo-record="projects">测试：填入项目经历</button>
+        <button class="add-record" type="button" data-demo-record="familyMembers">测试：填入家庭成员</button>
+        <button type="button">提交测试</button>
+      </form>
+    </main>
+    <script src="content.js"></script>
+    <script>
+      const sampleRecords = {
+        educations: [
+          { school: "复旦大学", educationLevel: "本科", major: "计算机科学与技术", startDate: "2018-09-03", endDate: "2022-06-25" },
+          { school: "上海中学", educationLevel: "高中", major: "理科", startDate: "2015-09-01", endDate: "2018-06-20" }
+        ],
+        workExperiences: [{ company: "示例科技有限公司", position: "开发实习生", workType: "实习", startDate: "2021-07-05", endDate: "2021-12-20" }],
+        projects: [{ name: "招聘管理平台", role: "核心开发", startDate: "2023-02-03", endDate: "2023-10-21", description: "建设招聘流程管理系统" }],
+        familyMembers: [{ relativeName: "示例亲属", relationship: "父亲", birthDate: "1968-04-10", gender: "男", worksInSystem: "否", employer: "示例单位", position: "职员", phone: "13800000001", politicalStatus: "群众", currentAddress: "上海市" }]
+      };
+
+      for (const button of document.querySelectorAll("[data-add-demo-record]")) {
+        button.addEventListener("click", () => {
+          const list = button.parentElement.querySelector("[data-records]");
+          const record = list.firstElementChild.cloneNode(true);
+          const index = list.children.length + 1;
+          const educationKind = button.dataset.addDemoRecord;
+          if (educationKind === "higherEducation") {
+            record.dataset.recordKind = educationKind;
+            record.querySelector("legend").textContent = `其他高校教育经历 ${index}`;
+            record.querySelector("[data-school-label]").textContent = "学校名称";
+          } else if (educationKind === "highSchool") {
+            record.dataset.recordKind = educationKind;
+            record.querySelector("legend").textContent = `其他高中教育经历 ${index}`;
+          } else {
+            record.querySelector("legend").textContent = `${button.textContent.replace("新增", "")} ${index}`;
+          }
+          for (const field of record.querySelectorAll("input, textarea, select")) {
+            field.value = "";
+            field.name = field.name.replace(/_\d+$/, `_${index}`);
+            field.removeAttribute("data-personal-autofill");
+          }
+          list.append(record);
+        });
+      }
+
+      document.querySelector("[data-demo-fill]").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoFill({
+          profile: { fullName: "王小明", email: "demo@example.com", phone: "13800000000" },
+          customFields: [],
+          overwriteExisting: false
+        });
+        document.querySelector("[data-demo-fill]").textContent = `测试完成：填写 ${report.filled} 项`;
+      });
+
+      for (const button of document.querySelectorAll("[data-demo-record]")) {
+        button.addEventListener("click", async () => {
+          const items = sampleRecords[button.dataset.demoRecord];
+          const report = await window.__personalAutofillDemoRecord(button.dataset.demoRecord, items[Number(button.dataset.demoIndex) || 0]);
+          button.textContent = `测试结果：${report.status}，填写 ${report.filled} 项`;
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <title>经历前置开关回归测试</title>
+    <style>
+      body{max-width:760px;margin:24px auto;font:16px system-ui,sans-serif}
+      .panel{border:1px solid #cbd5e1;padding:18px}.field{margin:12px 0}.field>span{display:block}
+      input,textarea{width:80%;padding:8px}.el-select{position:relative;width:80%}
+      .el-select-dropdown{background:white;border:1px solid #94a3b8;position:absolute;z-index:3}
+      .el-select-dropdown[hidden],#projectFields[hidden]{display:none}.el-select-dropdown__item{padding:6px 12px;cursor:pointer}
+      button{margin-top:16px;padding:8px 12px}
+    </style>
+  </head>
+  <body>
+    <h1>经历前置开关回归测试</h1>
+    <section class="panel" data-autofill-section="project">
+      <h2>科研项目或研究经历</h2>
+      <div class="field"><span>是否有科研项目或研究经历</span>
+        <div class="el-select"><input id="hasProject" readonly placeholder="请选择是否有科研项目或研究经历" />
+          <ul class="el-select-dropdown" hidden><li class="el-select-dropdown__item">是</li><li class="el-select-dropdown__item">否</li></ul>
+        </div>
+      </div>
+      <div id="projectFields" data-autofill-record hidden>
+        <label class="field">项目名称<input id="projectName" /></label>
+        <label class="field">项目角色<input id="projectRole" /></label>
+        <label class="field">项目描述<textarea id="projectDescription"></textarea></label>
+      </div>
+    </section>
+    <button id="run" type="button">测试填写</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      const select = document.querySelector(".el-select");
+      const dropdown = document.querySelector(".el-select-dropdown");
+      select.addEventListener("click", () => { dropdown.hidden = false; });
+      dropdown.addEventListener("click", (event) => {
+        const option = event.target.closest("li");
+        if (!option) return;
+        document.querySelector("#hasProject").value = option.textContent.trim();
+        document.querySelector("#hasProject").dispatchEvent(new Event("change", { bubbles: true }));
+        dropdown.hidden = true;
+        const shouldShow = option.textContent.trim() === "是";
+        document.querySelector("#projectFields").hidden = true;
+        window.setTimeout(() => {
+          document.querySelector("#projectFields").hidden = !shouldShow;
+        }, 800);
+      });
+      window.__personalAutofillDemoAiLocator = async (request) => ({
+        ok: true,
+        groupId: request.groups.find((group) => group.title.includes("科研项目"))?.id || request.groups[0]?.id || "",
+        confidence: 0.98,
+      });
+      window.__personalAutofillDemoAiMapper = async (request) => ({
+        ok: true,
+        mappings: request.fields.filter((field) => field.label.includes("项目名称"))
+          .map((field) => ({ fieldId: field.id, sourceKey: "name", confidence: 0.98 })),
+      });
+      document.querySelector("#run").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoAiRecord("projects", {
+          name: "智能招聘系统", role: "后端开发", description: "负责接口和测试建设",
+        });
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: report.status, filled: report.filled, failed: report.failed,
+          gate: document.querySelector("#hasProject").value,
+          name: document.querySelector("#projectName").value,
+          role: document.querySelector("#projectRole").value,
+          description: document.querySelector("#projectDescription").value,
+          passed: document.querySelector("#hasProject").value === "是" && report.failed === 0 && report.filled === 3,
+        });
+      });
+    </script>
+  </body>
+</html>

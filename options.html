@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>个人资料管理 · 速填</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 6h8M8 10h8M8 14h5" /><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" /></svg>
+          </span>
+          <div><strong>速填</strong><span>资料管理</span></div>
+        </div>
+
+        <nav class="section-nav" aria-label="资料分类">
+          <button class="active" type="button" data-section="basic" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3" /><path d="M5 21c.7-4 3-6 7-6s6.3 2 7 6" /></svg>
+            <span>基础信息</span><small id="basicCount">0</small>
+          </button>
+          <button type="button" data-section="education">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 8.5 9-5 9 5-9 5-9-5Z" /><path d="M6 10.5V16c3 2 9 2 12 0v-5.5M21 9v6" /></svg>
+            <span>教育经历</span><small id="educationCount">0</small>
+          </button>
+          <button type="button" data-section="work">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V4h6v3M3 12h18M10 12v2h4v-2" /></svg>
+            <span>工作经历</span><small id="workCount">0</small>
+          </button>
+          <button type="button" data-section="project">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6l2 2h8v12H4V5Z" /><path d="M8 12h8M8 15h5" /></svg>
+            <span>项目经历</span><small id="projectCount">0</small>
+          </button>
+          <button type="button" data-section="family">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="2.5" /><circle cx="16" cy="8" r="2.5" /><path d="M2.5 20c.3-3.4 2.2-5 5.5-5s5.2 1.6 5.5 5M11 15.7c1-.5 2.1-.7 3-.7 3.3 0 5.2 1.6 5.5 5" /></svg>
+            <span>家庭成员</span><small id="familyCount">0</small>
+          </button>
+          <button type="button" data-section="custom">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><rect x="14" y="14" width="6" height="6" rx="1" /></svg>
+            <span>自定义项目</span><small id="customCount">0</small>
+          </button>
+          <button type="button" data-section="settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1A8 8 0 0 0 15 6.2L14.7 4h-5.4L9 6.2a8 8 0 0 0-1.5.9l-2.4-1-2 3.4L5.1 11a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.4-1a8 8 0 0 0 1.5.9l.3 2.2h5.4l.3-2.2a8 8 0 0 0 1.5-.9l2.4 1 2-3.4-2-1.5a7 7 0 0 0 .1-1Z" /></svg>
+            <span>相关设置</span>
+          </button>
+        </nav>
+
+        <div class="privacy-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.4 2.8 8.3 7 10 4.2-1.7 7-5.6 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+          <div><strong>资料本地保存</strong><span>启用 AI 后，仅表单结构发送至 DeepSeek</span></div>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div><h1>个人资料管理</h1><p>资料仅保存在当前浏览器</p></div>
+          <div class="save-area">
+            <span id="saveStatus">已保存</span>
+            <button id="saveProfile" class="primary-button" type="button">保存修改</button>
+          </div>
+        </header>
+
+        <div class="workspace-body">
+          <section class="content-section active" data-panel="basic">
+            <div class="section-heading"><div><h2>基础信息</h2><p>常用个人资料集中管理，填写网页时会自动识别对应字段</p></div></div>
+            <div class="field-card profile-groups">
+              <section class="profile-group">
+                <h3>个人信息</h3>
+                <div class="form-grid">
+                  <label><span>姓</span><input data-profile-key="lastName" placeholder="王" /></label>
+                  <label><span>名</span><input data-profile-key="firstName" placeholder="小明" /></label>
+                  <label><span>完整姓名</span><input data-profile-key="fullName" placeholder="王小明" /></label>
+                  <label><span>昵称</span><input data-profile-key="nickname" placeholder="小明" /></label>
+                  <label><span>性别</span><input data-profile-key="gender" placeholder="男 / 女 / 其他" /></label>
+                  <label><span>出生日期</span><input data-profile-key="birthDate" type="date" /></label>
+                  <label><span>身高（cm）</span><input data-profile-key="height" type="number" min="50" max="250" inputmode="numeric" placeholder="例如：175" /></label>
+                  <label><span>体重（kg）</span><input data-profile-key="weight" type="number" min="20" max="300" step="0.1" inputmode="decimal" placeholder="例如：65" /></label>
+                  <label><span>健康状况</span><input data-profile-key="healthStatus" placeholder="例如：健康 / 良好" /></label>
+                  <label><span>工作年限</span><input data-profile-key="workYears" inputmode="decimal" placeholder="例如：2 年 / 应届生" /></label>
+                  <label class="wide"><span>特长</span><input data-profile-key="strengths" placeholder="请输入个人特长" /></label>
+                </div>
+              </section>
+
+              <section class="profile-group">
+                <h3>联系方式</h3>
+                <div class="form-grid">
+                  <label><span>电子邮箱</span><input data-profile-key="email" type="email" placeholder="name@example.com" /></label>
+                  <label><span>手机号码</span><input data-profile-key="phone" type="tel" placeholder="138 0000 0000" /></label>
+                  <label><span>微信号</span><input data-profile-key="wechat" placeholder="wx_example" /></label>
+                  <label><span>个人主页</span><input data-profile-key="website" type="url" placeholder="https://example.com" /></label>
+                  <label><span>紧急联系人姓名</span><input data-profile-key="emergencyContactName" placeholder="请输入紧急联系人姓名" /></label>
+                  <label><span>紧急联系人电话</span><input data-profile-key="emergencyContactPhone" type="tel" placeholder="请输入紧急联系人电话" /></label>
+                </div>
+              </section>
+
+              <section class="profile-group">
+                <h3>证件信息</h3>
+                <div class="form-grid">
+                  <label><span>证件类型</span><input data-profile-key="documentType" placeholder="身份证 / 护照 / 其他" /></label>
+                  <label><span>证件号码</span><input data-profile-key="documentNumber" placeholder="请输入证件号码" /></label>
+                </div>
+              </section>
+
+              <section class="profile-group">
+                <h3>地址信息</h3>
+                <div class="form-grid">
+                  <label class="wide"><span>地址</span><input data-profile-key="addressLine1" placeholder="街道、门牌号、小区" /></label>
+                  <label class="wide"><span>地址补充</span><input data-profile-key="addressLine2" placeholder="楼栋、单元、房间号（选填）" /></label>
+                  <label><span>城市</span><input data-profile-key="city" placeholder="上海市" /></label>
+                  <label><span>省 / 州</span><input data-profile-key="province" placeholder="上海市" /></label>
+                  <label><span>邮政编码</span><input data-profile-key="postalCode" inputmode="numeric" placeholder="200000" /></label>
+                  <label><span>国家 / 地区</span><input data-profile-key="country" placeholder="中国" /></label>
+                  <label><span>户籍</span><input data-profile-key="householdRegistration" placeholder="省 / 市 / 区县" /></label>
+                  <label><span>籍贯</span><input data-profile-key="nativePlace" placeholder="省 / 市 / 区县" /></label>
+                  <label><span>生源地</span><input data-profile-key="studentOrigin" placeholder="省 / 市 / 区县" /></label>
+                  <label><span>出生地</span><input data-profile-key="birthPlace" placeholder="省 / 市 / 区县" /></label>
+                  <label><span>现居住地</span><input data-profile-key="currentResidence" placeholder="省 / 市 / 区县" /></label>
+                </div>
+              </section>
+
+            </div>
+          </section>
+
+          <section class="content-section" data-panel="education" hidden>
+            <div class="section-heading">
+              <div><h2>教育经历 <span id="educationHeadingCount">0</span></h2><p>按阶段保存多段学历；在招聘网页显示对应表单后，从插件中选择一条填写</p></div>
+              <button class="secondary-button" type="button" data-add-record="educations">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>新增教育经历
+              </button>
+            </div>
+            <div class="record-list" data-record-list="educations"></div>
+            <div class="empty-state record-empty" data-record-empty="educations">
+              <strong>还没有教育经历</strong><span>新增后可填写学校、学历、专业及就读时间</span>
+            </div>
+          </section>
+
+          <section class="content-section" data-panel="work" hidden>
+            <div class="section-heading">
+              <div><h2>工作经历 <span id="workHeadingCount">0</span></h2><p>支持正式工作、实习和其他任职经历；填写时手动选择对应记录</p></div>
+              <button class="secondary-button" type="button" data-add-record="workExperiences">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>新增工作经历
+              </button>
+            </div>
+            <div class="record-list" data-record-list="workExperiences"></div>
+            <div class="empty-state record-empty" data-record-empty="workExperiences">
+              <strong>还没有工作经历</strong><span>新增后可填写单位、岗位、时间及工作内容</span>
+            </div>
+          </section>
+
+          <section class="content-section" data-panel="project" hidden>
+            <div class="section-heading">
+              <div><h2>项目经历 <span id="projectHeadingCount">0</span></h2><p>保存多个项目；填写时在插件中手动选择对应项目</p></div>
+              <button class="secondary-button" type="button" data-add-record="projects">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>新增项目经历
+              </button>
+            </div>
+            <div class="record-list" data-record-list="projects"></div>
+            <div class="empty-state record-empty" data-record-empty="projects">
+              <strong>还没有项目经历</strong><span>新增后可填写项目名称、角色、时间和成果</span>
+            </div>
+          </section>
+
+          <section class="content-section" data-panel="family" hidden>
+            <div class="section-heading">
+              <div><h2>家庭成员 <span id="familyHeadingCount">0</span></h2><p>保存多位家庭成员；先在招聘网页打开或新增表单，再从插件中选择一位填写</p></div>
+              <button class="secondary-button" type="button" data-add-record="familyMembers">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>新增家庭成员
+              </button>
+            </div>
+            <div class="record-list" data-record-list="familyMembers"></div>
+            <div class="empty-state record-empty" data-record-empty="familyMembers">
+              <strong>还没有家庭成员</strong><span>新增后可填写关系、出生日期、工作单位及联系方式</span>
+            </div>
+          </section>
+
+          <section class="content-section" data-panel="custom" hidden>
+            <div class="section-heading custom-heading">
+              <div><h2>自定义项目 <span id="customHeadingCount">0</span></h2><p>用项目名称和关键词匹配网页字段，多个关键词之间用空格分隔</p></div>
+              <button id="addCustomField" class="secondary-button" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                新增项目
+              </button>
+            </div>
+
+            <div class="custom-toolbar">
+              <label class="search-box">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></svg>
+                <input id="customSearch" type="search" placeholder="搜索资料项目" />
+              </label>
+              <span id="filterResult"></span>
+            </div>
+
+            <div class="custom-table">
+              <div class="custom-table-header" aria-hidden="true">
+                <span>项目名称</span><span>填写内容</span><span>匹配关键词</span><span></span>
+              </div>
+              <div id="customFieldsList" class="custom-fields-list"></div>
+              <div id="customFieldsEmpty" class="empty-state">
+                <strong>还没有自定义资料</strong>
+                <span>点击“新增项目”添加员工编号或其他资料</span>
+              </div>
+              <div id="noSearchResult" class="empty-state" hidden>
+                <strong>没有匹配的项目</strong><span>尝试搜索其他关键词</span>
+              </div>
+            </div>
+
+            <p class="safety-hint">密码、验证码和支付相关字段始终不会填写。</p>
+          </section>
+
+          <section class="content-section" data-panel="settings" hidden>
+            <div class="section-heading"><div><h2>相关设置</h2><p>控制扩展在网页中的填写方式</p></div></div>
+            <div class="settings-list">
+              <label class="option-row">
+                <div><strong>覆盖已有内容</strong><span>关闭时只会填写空白字段</span></div>
+                <span class="switch"><input id="overwriteExisting" type="checkbox" /><span aria-hidden="true"></span></span>
+              </label>
+              <label class="option-row">
+                <div><strong>DeepSeek AI 辅助填写</strong><span>定位经历表单并匹配字段；不确定时会在网页上请你确认</span></div>
+                <span class="switch"><input id="aiEnabled" type="checkbox" /><span aria-hidden="true"></span></span>
+              </label>
+              <div class="ai-key-row">
+                <label for="deepseekApiKey"><strong>DeepSeek API Key</strong><span>仅保存在当前浏览器的扩展存储中；浏览器扩展存储不加密</span></label>
+                <div class="ai-key-controls">
+                  <input id="deepseekApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-..." />
+                  <button id="testAiConnection" class="secondary-button" type="button">测试连接</button>
+                </div>
+                <p>仅发送当前表单的字段标签、控件类型、选项及自定义项目名称和关键词；不会发送资料填写值。AI 不会点击新增、保存或提交。</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="options.js"></script>
+  </body>
+</html>

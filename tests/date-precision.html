@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <title>日期精度回归测试</title>
+    <style>
+      body { max-width: 660px; margin: 20px auto; font: 16px system-ui, sans-serif; }
+      fieldset { margin: 12px 0; padding: 12px; }
+      label { display: inline-block; margin: 5px 12px 5px 0; }
+      input { display: block; padding: 5px; }
+      button { padding: 9px 14px; }
+    </style>
+  </head>
+  <body>
+    <h1>日期精度回归测试</h1>
+    <section data-autofill-section="education">
+      <fieldset data-autofill-record>
+        <legend>教育经历</legend>
+        <label>学校名称<input name="school" /></label>
+        <label>入学时间<input name="education_start" placeholder="YYYY年MM月DD日" /></label>
+        <label>毕业时间<input name="education_end" placeholder="YYYY年MM月" /></label>
+      </fieldset>
+    </section>
+    <section data-autofill-section="work">
+      <fieldset data-autofill-record>
+        <legend>工作经历</legend>
+        <label>工作单位<input name="company" /></label>
+        <label>开始时间<input type="date" name="work_start" /></label>
+        <label>结束时间<input type="month" name="work_end" /></label>
+      </fieldset>
+    </section>
+    <section data-autofill-section="project">
+      <fieldset data-autofill-record>
+        <legend>项目经历</legend>
+        <label>项目名称<input name="project_name" /></label>
+        <label>开始时间<input name="project_start" placeholder="YYYY-MM-DD" /></label>
+        <label>结束时间<input name="project_end" placeholder="YYYY-MM" /></label>
+      </fieldset>
+    </section>
+    <section data-autofill-section="family">
+      <fieldset data-autofill-record>
+        <legend>家庭成员</legend>
+        <label>亲属姓名<input name="relative_name" /></label>
+        <label>出生日期<input type="date" name="relative_birth_date" /></label>
+      </fieldset>
+    </section>
+    <button type="button" id="run">运行日期测试</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      document.querySelector("#run").addEventListener("click", async () => {
+        const checks = [
+          ["education", "educations", { school: "测试大学", startDate: "2021-09-07", endDate: "2025-06-23" }],
+          ["work", "workExperiences", { company: "测试单位", startDate: "2022-03-14", endDate: "2023-02-28" }],
+          ["project", "projects", { name: "测试项目", startDate: "2023-04-09", endDate: "2024-01-16" }],
+          ["family", "familyMembers", { relativeName: "测试亲属", birthDate: "1970-11-19" }],
+        ];
+        const reports = [];
+        for (const [section, type, record] of checks) {
+          document.querySelector(`[data-autofill-section="${section}"]`).scrollIntoView({ block: "center" });
+          reports.push(await window.__personalAutofillDemoRecord(type, record));
+        }
+        const expected = [
+          ["education_start", "2021年09月07日"], ["education_end", "2025年06月"],
+          ["work_start", "2022-03-14"], ["work_end", "2023-02"],
+          ["project_start", "2023-04-09"], ["project_end", "2024-01"],
+          ["relative_birth_date", "1970-11-19"],
+        ];
+        const failures = expected.filter(([name, value]) => document.querySelector(`[name="${name}"]`).value !== value);
+        document.querySelector("#result").textContent = `${failures.length ? "失败" : "通过"}：${expected.length - failures.length}/${expected.length} 个日期，${reports.reduce((sum, item) => sum + item.failed, 0)} 项未匹配`;
+      });
+    </script>
+  </body>
+</html>

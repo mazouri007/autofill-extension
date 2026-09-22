@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI 字段映射回归测试</title>
+    <style>
+      body { max-width: 720px; margin: 24px auto; font: 16px system-ui, sans-serif; }
+      fieldset { margin: 18px 0; padding: 18px; }
+      label { display: block; margin: 10px 0; }
+      input { display: block; width: 85%; padding: 7px; font: inherit; }
+      button { padding: 9px 14px; margin-right: 8px; }
+      output { display: block; margin: 14px 0; }
+    </style>
+  </head>
+  <body>
+    <h1>AI 字段映射回归测试</h1>
+    <fieldset>
+      <legend>基础信息</legend>
+      <label>联系邮箱<input id="email" /></label>
+      <label>备用电子邮箱<input id="sameEmail" value="private-person@example.invalid" /></label>
+      <label>手机号码<input id="phone" /></label>
+      <label>内部代号<input id="custom" /></label>
+      <label>个人主页<input id="website" value="https://old.example.invalid" /></label>
+      <label>城市（只读控件示例）<input id="readonlyCity" readonly /></label>
+      <label>性别：女<input id="femaleOption" type="radio" name="genderExample" value="女" /></label>
+      <label>性别：男<input id="maleOption" type="radio" name="genderExample" value="男" /></label>
+    </fieldset>
+    <section data-autofill-section="project">
+      <fieldset data-autofill-record>
+        <legend>已有项目</legend>
+        <label>项目名称<input value="别的项目" /></label>
+        <label>项目角色<input value="旧角色" /></label>
+      </fieldset>
+      <fieldset data-autofill-record>
+        <legend>空白项目</legend>
+        <label>项目名称<input id="projectName" /></label>
+        <label>项目角色<input id="projectRole" /></label>
+      </fieldset>
+    </section>
+    <button id="fillBasic" type="button">测试 AI 一键填写</button>
+    <button id="fillProject" type="button">测试 AI 指定项目</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      const privateEmail = "private-person@example.invalid";
+      const privatePhone = "13812345678";
+      const privateCustom = "secret-custom-value";
+      const privateWebsite = "https://new.example.invalid";
+      window.__personalAutofillDemoAiLocator = async (request) => ({
+        ok: true,
+        groupId: request.groups.find((group) => group.title.includes("空白项目"))?.id || "",
+        confidence: 0.98,
+      });
+      window.__personalAutofillDemoAiMapper = async (request) => {
+        const serialized = JSON.stringify(request);
+        if ([privateEmail, privatePhone, privateCustom, privateWebsite, "目标项目", "测试角色"].some((value) => serialized.includes(value))) {
+          return { ok: false, error: "privacy_leak" };
+        }
+        return {
+          ok: true,
+          mappings: request.fields.map((field) => {
+            const label = field.label;
+            let sourceKey = "";
+            if (request.section === "basic") {
+              if (label.includes("邮箱")) sourceKey = "email";
+              if (label.includes("手机")) sourceKey = "phone";
+              if (label.includes("代号")) sourceKey = "custom:custom-test";
+              if (label.includes("主页")) sourceKey = "website";
+              if (label.includes("城市")) sourceKey = "city";
+              if (label.includes("性别")) sourceKey = "gender";
+            } else {
+              if (label.includes("项目名称")) sourceKey = "name";
+              if (label.includes("项目角色")) sourceKey = "role";
+            }
+            return sourceKey ? { fieldId: field.id, sourceKey, confidence: sourceKey === "phone" ? 0.65 : 0.98 } : null;
+          }).filter(Boolean),
+        };
+      };
+      document.querySelector("#fillBasic").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoAiFill({
+          profile: { email: privateEmail, phone: privatePhone, website: privateWebsite,
+            city: "武汉", gender: "男" },
+          customFields: [{ id: "custom-test", label: "内部代号", keywords: "代号", value: privateCustom }],
+          overwriteExisting: false,
+        });
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: report.status, filled: report.filled, unchanged: report.unchanged,
+          failed: report.failed, pending: report.pendingReview,
+          email: document.querySelector("#email").value, phone: document.querySelector("#phone").value,
+          custom: document.querySelector("#custom").value,
+          sameEmail: document.querySelector("#sameEmail").value,
+          website: document.querySelector("#website").value,
+          readonlyCity: document.querySelector("#readonlyCity").value,
+          femaleChecked: document.querySelector("#femaleOption").checked,
+          maleChecked: document.querySelector("#maleOption").checked,
+        });
+      });
+      document.querySelector("#fillProject").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoAiRecord("projects", { name: "目标项目", role: "测试角色" });
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: report.status, filled: report.filled, pending: report.pendingReview,
+          existing: document.querySelector("[data-autofill-record] input").value,
+          target: document.querySelector("#projectName").value,
+        });
+      });
+    </script>
+  </body>
+</html>

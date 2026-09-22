@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <title>AI 表单区域定位回归测试</title>
+    <style>
+      body{max-width:920px;margin:20px auto;font:16px system-ui,sans-serif}
+      .application-panel{border:1px solid #cbd5e1;margin:16px 0;padding:14px}
+      .panel-title{font-size:20px;font-weight:bold;margin-bottom:12px}
+      .field{display:block;margin:10px 0}
+      .field input{display:block;width:75%;padding:7px}
+      .el-date-editor{display:block;width:75%}
+      .el-date-editor input{width:100%}
+      .el-picker-panel{position:fixed;right:20px;top:20px;z-index:20;background:#fff;border:1px solid #94a3b8;padding:10px}
+      .el-date-picker__header{display:flex;gap:8px;align-items:center}
+      .el-date-table td{padding:4px;cursor:pointer}
+      button{padding:8px 12px;margin-right:8px}
+    </style>
+  </head>
+  <body>
+    <h1>AI 表单区域定位回归测试</h1>
+    <main>
+      <div class="application-panel">
+        <div class="panel-title">实习经历</div>
+        <div><div><div><div><div><div><div><div><div>
+          <div class="field"><span>工作单位</span><input id="internCompany" placeholder="请填写您实习所在单位的名称" /></div>
+          <div class="field"><span>职务</span><input id="internPosition" placeholder="填写岗位称呼" /></div>
+          <div class="field"><span>入职时间</span><span class="el-date-editor el-input"><input class="el-input__inner" id="internStart" placeholder="选择开始日期" readonly /></span></div>
+          <div class="field"><span>离职时间</span><span class="zp-date-picker"><input id="internEnd" placeholder="选择结束日期" readonly /></span></div>
+          <div class="field"><span>工作描述</span><input id="internDescription" placeholder="填写主要工作内容" /></div>
+        </div></div></div></div></div></div></div></div></div>
+      </div>
+      <div class="application-panel">
+        <div class="panel-title">科研项目</div>
+        <div><div><div><div><div><div><div><div><div>
+          <div class="field"><span>项目</span><input id="projectName" placeholder="填写科研主题" /></div>
+          <div class="field"><span>角色</span><input id="projectRole" placeholder="填写参与身份" /></div>
+        </div></div></div></div></div></div></div></div></div>
+      </div>
+    </main>
+    <div class="el-picker-panel el-date-picker" id="calendar" hidden>
+      <div class="el-date-picker__header">
+        <button type="button" class="el-date-picker__prev-btn el-icon-d-arrow-left" aria-label="上一年">«</button>
+        <button type="button" class="el-date-picker__prev-btn el-icon-arrow-left" aria-label="上个月">‹</button>
+        <span class="el-date-picker__header-label" id="shownYear"></span>
+        <span class="el-date-picker__header-label" id="shownMonth"></span>
+        <button type="button" class="el-date-picker__next-btn el-icon-arrow-right" aria-label="下个月">›</button>
+        <button type="button" class="el-date-picker__next-btn el-icon-d-arrow-right" aria-label="下一年">»</button>
+      </div>
+      <table class="el-date-table"><tbody><tr id="days"></tr></tbody></table>
+    </div>
+    <button id="highConfidence" type="button">AI 定位并填写实习</button>
+    <button id="lowConfidence" type="button">低置信时人工确认</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      let confidence = 0.98;
+      let activeDateInput = null;
+      let shownYear = 2026;
+      let shownMonth = 9;
+      const calendar = document.querySelector("#calendar");
+      function renderCalendar() {
+        document.querySelector("#shownYear").textContent = `${shownYear} 年`;
+        document.querySelector("#shownMonth").textContent = `${shownMonth} 月`;
+        document.querySelector("#days").innerHTML = Array.from({ length: 31 }, (_, index) =>
+          `<td class="available"><span>${index + 1}</span></td>`).join("");
+      }
+      for (const input of document.querySelectorAll(".el-date-editor input, .zp-date-picker input")) {
+        input.addEventListener("click", () => {
+          activeDateInput = input;
+          shownYear = 2026;
+          shownMonth = 9;
+          renderCalendar();
+          calendar.hidden = false;
+        });
+      }
+      document.querySelector("#internEnd").addEventListener("input", (event) => {
+        event.target.value = "";
+      });
+      calendar.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (button?.classList.contains("el-icon-d-arrow-left")) shownYear -= 1;
+        else if (button?.classList.contains("el-icon-d-arrow-right")) shownYear += 1;
+        else if (button?.classList.contains("el-icon-arrow-left")) {
+          shownMonth -= 1;
+          if (shownMonth === 0) { shownMonth = 12; shownYear -= 1; }
+        } else if (button?.classList.contains("el-icon-arrow-right")) {
+          shownMonth += 1;
+          if (shownMonth === 13) { shownMonth = 1; shownYear += 1; }
+        }
+        if (button) renderCalendar();
+        const cell = event.target.closest("td.available");
+        if (cell && activeDateInput) {
+          activeDateInput.value = `${shownYear}-${String(shownMonth).padStart(2, "0")}-${String(cell.textContent.trim()).padStart(2, "0")}`;
+          activeDateInput.dispatchEvent(new Event("change", { bubbles: true }));
+          calendar.hidden = true;
+        }
+      });
+      renderCalendar();
+      window.__personalAutofillDemoAiLocator = async (request) => {
+        const serialized = JSON.stringify(request);
+        if (serialized.includes("测试实习单位") || serialized.includes("后端开发") ||
+          serialized.includes("主要负责接口开发") || serialized.includes("2026-09-30")) {
+          return { ok: false, error: "privacy_leak" };
+        }
+        const target = request.groups.find((group) => group.title.includes("实习经历"));
+        return { ok: true, groupId: target?.id || "", confidence };
+      };
+      window.__personalAutofillDemoAiMapper = async (request) => ({
+        ok: true,
+        mappings: request.fields.map((field) => {
+          const label = field.label;
+          const sourceKey = label.includes("单位") ? "company" : label.includes("岗位") ? "position"
+            : label.includes("开始日期") ? "startDate" : label.includes("结束日期") ? "endDate"
+              : label.includes("工作内容") ? "responsibilities" : "";
+          return sourceKey ? { fieldId: field.id, sourceKey, confidence: 0.98 } : null;
+        }).filter(Boolean),
+      });
+      const record = {
+        company: "测试实习单位", position: "后端开发", startDate: "2025-07-01", endDate: "2026-09-30",
+        responsibilities: "主要负责接口开发",
+      };
+      async function run(low) {
+        confidence = low ? 0.55 : 0.98;
+        const report = await window.__personalAutofillDemoAiRecord("workExperiences", record);
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: report.status, filled: report.filled, failed: report.failed,
+          pendingTargetReview: report.pendingTargetReview,
+          company: document.querySelector("#internCompany").value,
+          position: document.querySelector("#internPosition").value,
+          start: document.querySelector("#internStart").value,
+          end: document.querySelector("#internEnd").value,
+          description: document.querySelector("#internDescription").value,
+          project: document.querySelector("#projectName").value,
+          passed: report.failed === 0 && document.querySelector("#internStart").value === "2025-07-01" &&
+            document.querySelector("#internEnd").value === "2026-09-30",
+        });
+      }
+      document.querySelector("#highConfidence").addEventListener("click", () => run(false));
+      document.querySelector("#lowConfidence").addEventListener("click", () => run(true));
+    </script>
+  </body>
+</html>

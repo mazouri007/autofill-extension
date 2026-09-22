@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head><meta charset="UTF-8" /><title>扩展个人信息回归测试</title></head>
+  <body>
+    <h1>个人信息</h1>
+    <form>
+      <label>户籍<input id="household" /></label>
+      <label>籍贯<input id="nativePlace" /></label>
+      <label>生源地<input id="studentOrigin" /></label>
+      <label>出生地<input id="birthPlace" /></label>
+      <label>身高<input id="height" type="number" /></label>
+      <label>体重<input id="weight" type="number" step="0.1" /></label>
+      <label>健康状况
+        <select id="health"><option value="">请选择</option><option>健康</option><option>良好</option></select>
+      </label>
+      <label>特长<input id="strengths" /></label>
+      <label>工作年限<input id="workYears" type="number" step="0.1" /></label>
+      <label>紧急联系人姓名<input id="emergencyName" /></label>
+      <label>紧急联系人电话<input id="emergencyPhone" /></label>
+      <label>国家/地区<input id="country" /></label>
+      <label>国籍<input id="nationality" /></label>
+      <label>电话所在区域<select id="phoneRegion"><option value="">请选择</option><option>+86</option></select></label>
+      <label>移动电话<input id="mobilePhone" /></label>
+      <label>家庭住址<textarea id="homeAddress"></textarea></label>
+      <label>现居住地<input id="residence" /></label>
+    </form>
+    <button id="fill" type="button">测试填写</button>
+    <output id="result"></output>
+    <script src="../content.js?v=2"></script>
+    <script>
+      document.querySelector("#fill").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoFill({
+          profile: {
+            householdRegistration: "山西省晋中市平遥县", nativePlace: "山西省晋中市平遥县",
+            studentOrigin: "山西省晋中市平遥县", birthPlace: "山西省晋中市平遥县",
+            height: "175", weight: "65",
+            healthStatus: "健康", strengths: "羽毛球", workYears: "2年",
+            emergencyContactName: "测试联系人", emergencyContactPhone: "13900000000",
+            country: "中国", phone: "13900000000", addressLine1: "测试家庭住址",
+            currentResidence: "湖北省武汉市武昌区",
+          },
+          customFields: [], overwriteExisting: false,
+        });
+        document.querySelector("#result").textContent = JSON.stringify({
+          filled: report.filled, household: household.value, nativePlace: nativePlace.value,
+          studentOrigin: studentOrigin.value, birthPlace: birthPlace.value,
+          height: height.value, weight: weight.value,
+          health: health.value, strengths: strengths.value, workYears: workYears.value,
+          emergencyName: emergencyName.value, emergencyPhone: emergencyPhone.value,
+          country: country.value, nationality: nationality.value,
+          phoneRegion: phoneRegion.value, mobilePhone: mobilePhone.value,
+          homeAddress: homeAddress.value, residence: residence.value,
+          nationalityKey: window.__personalAutofillDemoClassify(nationality),
+          phoneRegionKey: window.__personalAutofillDemoClassify(phoneRegion),
+          homeAddressKey: window.__personalAutofillDemoClassify(homeAddress),
+          emergencyPhoneKey: window.__personalAutofillDemoClassify(emergencyPhone),
+        });
+      });
+    </script>
+  </body>
+</html>

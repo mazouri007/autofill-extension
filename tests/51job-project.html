@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo data-autofill-demo-51job>
+  <head>
+    <meta charset="UTF-8" />
+    <title>51job 科研项目表单回归测试</title>
+    <style>
+      body { max-width: 760px; margin: 24px auto; font: 16px system-ui, sans-serif; }
+      .project { margin: 16px 0; padding: 16px; border: 1px solid #ccc; }
+      dl { display: inline-block; width: 44%; margin: 9px 2%; vertical-align: top; }
+      dt { margin-bottom: 7px; }
+      input, textarea { box-sizing: border-box; width: 100%; padding: 8px; font: inherit; }
+      textarea { min-height: 74px; }
+      button { padding: 9px 14px; }
+      output { display: block; margin: 12px 0; }
+      [data-personal-autofill="filled"] { background: #e7f7e9; }
+    </style>
+  </head>
+  <body>
+    <h1>科研项目或研究经历</h1>
+    <p>先点击第二条记录的任意输入框，再运行填写测试。第一条已有内容，不应被改写。</p>
+    <div class="project" id="existing">
+      <h2>已有项目</h2>
+      <dl><dt>项目开始时间 *</dt><dd><input type="text" readonly data-date-format="yyyy-MM-dd" value="2025-09-01" /></dd></dl>
+      <dl><dt>项目结束时间 *</dt><dd><input type="text" readonly data-date-format="yyyy-MM-dd" value="2026-03-31" /></dd></dl>
+      <dl><dt>项目名称 *</dt><dd><input type="text" value="另一项研究" /></dd></dl>
+      <dl><dt>项目职责 *</dt><dd><input type="text" value="既有职责" /></dd></dl>
+      <dl><dt>工作描述 *</dt><dd><textarea>既有描述</textarea></dd></dl>
+    </div>
+    <div class="project" id="target">
+      <h2>空白项目</h2>
+      <dl><dt>项目开始时间 *</dt><dd><input type="text" readonly data-date-format="yyyy-MM-dd" /></dd></dl>
+      <dl><dt>项目结束时间 *</dt><dd><input type="text" readonly data-date-format="yyyy-MM-dd" /></dd></dl>
+      <dl><dt>项目名称 *</dt><dd><input id="targetName" type="text" /></dd></dl>
+      <dl><dt>项目职责 *</dt><dd><input type="text" /></dd></dl>
+      <dl><dt>工作描述 *</dt><dd><textarea></textarea></dd></dl>
+    </div>
+    <button type="button" id="run">填写所选项目</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      const record = {
+        name: "目标项目", role: "算法开发", description: "研究并实现模型",
+        startDate: "2024-04-09", endDate: "2024-11-16",
+      };
+      document.querySelector("#run").addEventListener("click", async () => {
+        const result = await window.__personalAutofillDemoRecord("projects", record);
+        const firstValues = Array.from(document.querySelectorAll("#existing input, #existing textarea"), (element) => element.value);
+        const targetValues = Array.from(document.querySelectorAll("#target input, #target textarea"), (element) => element.value);
+        const unchanged = JSON.stringify(firstValues) === JSON.stringify([
+          "2025-09-01", "2026-03-31", "另一项研究", "既有职责", "既有描述",
+        ]);
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: result.status, filled: result.filled, failed: result.failed, unchanged, targetValues,
+        });
+      });
+    </script>
+  </body>
+</html>

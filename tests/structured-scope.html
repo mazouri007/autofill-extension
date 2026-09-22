@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <title>结构化表单作用域回归测试</title>
+    <style>
+      body{max-width:760px;margin:20px auto;font:16px system-ui,sans-serif}
+      .form-wrapper{border:1px solid #cbd5e1;padding:16px}.panel{margin:18px 0;padding:12px;border:1px solid #e2e8f0}
+      label{display:block;margin:8px 0}input,select{padding:6px;min-width:240px}
+    </style>
+  </head>
+  <body>
+    <h1>结构化表单作用域回归测试</h1>
+    <div class="form-wrapper">
+      <section class="panel">
+        <h2>个人信息</h2>
+        <label>姓名<input id="personalName" value="测试本人" /></label>
+        <label>出生日期<input id="personalBirth" value="2000-01-02" /></label>
+        <label>性别<input id="personalGender" value="男" /></label>
+        <label>联系电话<input id="personalPhone" value="13800000000" /></label>
+      </section>
+      <section class="panel">
+        <h2>家庭关系</h2>
+        <div id="familyEditor">
+          <label>关系类型<select id="relationship"><option value="">请选择</option><option>父亲</option><option>母亲</option></select></label>
+          <label>姓名<input id="relativeName" /></label>
+          <label>工作单位<input id="employer" /></label>
+          <label>职位<input id="position" /></label>
+        </div>
+      </section>
+    </div>
+    <button id="run" type="button">填写家庭成员</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      document.querySelector("#run").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoRecord("familyMembers", {
+          relativeName: "测试父亲", relationship: "父子", employer: "测试单位", position: "工程师",
+        });
+        const result = {
+          status: report.status, filled: report.filled, failed: report.failed,
+          personalName: personalName.value, personalBirth: personalBirth.value,
+          relativeName: relativeName.value, relationship: relationship.value,
+          employer: employer.value, position: position.value,
+        };
+        result.passed = result.personalName === "测试本人" && result.personalBirth === "2000-01-02" &&
+          result.relativeName === "测试父亲" && result.relationship === "父亲" &&
+          result.employer === "测试单位" && result.position === "工程师";
+        document.querySelector("#result").textContent = JSON.stringify(result);
+      });
+    </script>
+  </body>
+</html>

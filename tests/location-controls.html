@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <title>地区字段与级联选择器回归测试</title>
+    <style>
+      body{max-width:760px;margin:20px auto;font:16px system-ui,sans-serif}
+      label{display:block;margin:12px 0}
+      input,select{min-width:180px;padding:6px}
+      .el-cascader{display:inline-block}
+      .region-picker{display:inline-block}
+      .el-cascader__dropdown{position:fixed;right:20px;top:20px;background:#fff;border:1px solid #94a3b8;padding:8px}
+      .el-cascader-node{padding:6px 12px;cursor:pointer}
+      .job-region-popover{position:fixed;left:20px;bottom:20px;background:#fff;border:1px solid #94a3b8;padding:8px}
+      .job-region-columns{display:flex;gap:8px}.job-region-columns ul{min-width:100px;margin:0;padding:0;list-style:none}
+      .job-region-columns li{padding:4px 8px;cursor:pointer}
+      button{padding:8px 12px}
+    </style>
+  </head>
+  <body>
+    <h1>地区字段与级联选择器回归测试</h1>
+    <form>
+      <label>户籍<input id="household" /></label>
+      <label>户口所在地
+        <span class="region-picker"><input id="householdPopup" role="combobox" readonly placeholder="请选择省 / 市 / 区" /></span>
+      </label>
+      <label>现居住地
+        <span class="ant-cascader-picker" id="residenceCascader">
+          <input id="residence" readonly placeholder="请选择省 / 市" />
+        </span>
+      </label>
+      <fieldset>
+        <legend>籍贯</legend>
+        <label>籍贯省份<select id="nativeProvince"><option value="">请选择</option><option>山西省</option><option>湖北省</option></select></label>
+        <label>籍贯城市<select id="nativeCity"><option value="">请选择</option><option>晋中市</option><option>武汉市</option></select></label>
+        <label>籍贯区县<select id="nativeDistrict"><option value="">请选择</option><option>平遥县</option><option>武昌区</option></select></label>
+      </fieldset>
+      <label>出生地
+        <span class="el-cascader" id="birthCascader">
+          <input id="birthPlace" class="el-input__inner" readonly placeholder="请选择省 / 市 / 区" />
+        </span>
+      </label>
+      <label>高考生源地
+        <span><input id="studentOrigin" role="combobox" readonly placeholder="请选择高考生源地" /></span>
+      </label>
+    </form>
+    <div class="el-cascader__dropdown" id="locationPanel" hidden>
+      <div class="el-cascader-panel"><div class="el-cascader-menu" id="locationOptions"></div></div>
+    </div>
+    <div class="region-picker-panel" role="listbox" id="householdPanel" hidden>
+      <div id="householdOptions"></div>
+    </div>
+    <div class="ant-cascader-dropdown" id="residencePanel" hidden>
+      <div id="residenceOptions"></div>
+    </div>
+    <div class="job-region-popover" id="studentOriginPanel" hidden>
+      <div>请选择行政区</div>
+      <input placeholder="搜索城市名/区县" />
+      <div class="job-region-columns">
+        <ul id="studentOriginProvinces"></ul>
+        <ul id="studentOriginCities"></ul>
+        <ul id="studentOriginDistricts"></ul>
+      </div>
+    </div>
+    <button id="fill" type="button">运行地区填写测试</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      const tree = {
+        "湖北省": { "武汉市": ["武昌区", "洪山区"] },
+        "山西省": { "晋中市": ["平遥县", "榆次区"] },
+      };
+      const panel = document.querySelector("#locationPanel");
+      const options = document.querySelector("#locationOptions");
+      const input = document.querySelector("#birthPlace");
+      const householdPopup = document.querySelector("#householdPopup");
+      const householdPanel = document.querySelector("#householdPanel");
+      const householdOptions = document.querySelector("#householdOptions");
+      const residenceInput = document.querySelector("#residence");
+      const residencePanel = document.querySelector("#residencePanel");
+      const residenceOptions = document.querySelector("#residenceOptions");
+      const studentOriginInput = document.querySelector("#studentOrigin");
+      const studentOriginPanel = document.querySelector("#studentOriginPanel");
+      const studentOriginLists = ["#studentOriginProvinces", "#studentOriginCities", "#studentOriginDistricts"]
+        .map((selector) => document.querySelector(selector));
+      let selected = [];
+      let householdSelected = [];
+      let residenceSelected = [];
+      let studentOriginSelected = [];
+      function valuesAtLevel() {
+        if (!selected.length) return Object.keys(tree);
+        if (selected.length === 1) return Object.keys(tree[selected[0]] || {});
+        return tree[selected[0]]?.[selected[1]] || [];
+      }
+      function renderOptions() {
+        options.replaceChildren(...valuesAtLevel().map((value) => {
+          const node = document.createElement("div");
+          node.className = "el-cascader-node";
+          node.setAttribute("role", "option");
+          node.textContent = value;
+          return node;
+        }));
+      }
+      function openPanel() {
+        selected = [];
+        renderOptions();
+        panel.hidden = false;
+      }
+      input.addEventListener("click", openPanel);
+      householdPopup.addEventListener("click", () => {
+        householdSelected = [];
+        renderHouseholdOptions();
+        householdPanel.hidden = false;
+      });
+      function renderHouseholdOptions() {
+        const values = !householdSelected.length ? Object.keys(tree)
+          : householdSelected.length === 1 ? Object.keys(tree[householdSelected[0]] || {})
+            : tree[householdSelected[0]]?.[householdSelected[1]] || [];
+        householdOptions.replaceChildren(...values.map((value) => {
+          const option = document.createElement("div");
+          option.setAttribute("role", "option");
+          option.textContent = value;
+          return option;
+        }));
+      }
+      householdOptions.addEventListener("click", (event) => {
+        const option = event.target.closest("[role='option']");
+        if (!option) return;
+        householdSelected.push(option.textContent.trim());
+        if (householdSelected.length === 3) {
+          householdPopup.value = householdSelected.join(" / ");
+          householdPopup.dispatchEvent(new Event("change", { bubbles: true }));
+          householdPanel.hidden = true;
+        } else renderHouseholdOptions();
+      });
+      function renderResidenceOptions() {
+        const values = residenceSelected.length === 0 ? Object.keys(tree)
+          : Object.keys(tree[residenceSelected[0]] || {});
+        residenceOptions.replaceChildren(...values.map((value) => {
+          const option = document.createElement("div");
+          option.className = "ant-cascader-menu-item";
+          option.textContent = value;
+          return option;
+        }));
+      }
+      residenceInput.addEventListener("click", () => {
+        residenceSelected = [];
+        renderResidenceOptions();
+        residencePanel.hidden = false;
+      });
+      residenceOptions.addEventListener("click", (event) => {
+        const option = event.target.closest(".ant-cascader-menu-item");
+        if (!option) return;
+        residenceSelected.push(option.textContent.trim());
+        if (residenceSelected.length === 2) {
+          residenceInput.value = residenceSelected.join(" / ");
+          residenceInput.dispatchEvent(new Event("change", { bubbles: true }));
+          // The real site keeps the menu mounted after accepting its two levels.
+        } else renderResidenceOptions();
+      });
+      function renderStudentOriginColumn(level, values) {
+        studentOriginLists[level].replaceChildren(...values.map((value) => {
+          const option = document.createElement("li");
+          option.dataset.level = String(level);
+          option.textContent = value.replace(/省$|市$/, "");
+          return option;
+        }));
+      }
+      studentOriginInput.addEventListener("click", () => {
+        studentOriginSelected = [];
+        renderStudentOriginColumn(0, Object.keys(tree));
+        renderStudentOriginColumn(1, ["北京市", "上海市"]);
+        renderStudentOriginColumn(2, ["朝阳区", "海淀区"]);
+        studentOriginPanel.hidden = false;
+      });
+      studentOriginPanel.addEventListener("click", (event) => {
+        const option = event.target.closest("li[data-level]");
+        if (!option) return;
+        const level = Number(option.dataset.level);
+        const values = level === 0 ? Object.keys(tree) : level === 1
+          ? Object.keys(tree[studentOriginSelected[0]] || {})
+          : tree[studentOriginSelected[0]]?.[studentOriginSelected[1]] || [];
+        const selectedValue = values.find((value) => value.replace(/省$|市$/, "") === option.textContent.trim());
+        studentOriginSelected[level] = selectedValue;
+        studentOriginSelected.length = level + 1;
+        if (level === 0) {
+          renderStudentOriginColumn(1, Object.keys(tree[selectedValue] || {}));
+          renderStudentOriginColumn(2, []);
+        } else if (level === 1) {
+          renderStudentOriginColumn(2, tree[studentOriginSelected[0]]?.[selectedValue] || []);
+        } else {
+          studentOriginInput.value = studentOriginSelected.join("-");
+          studentOriginInput.dispatchEvent(new Event("change", { bubbles: true }));
+          studentOriginPanel.hidden = true;
+        }
+      });
+      document.querySelector("#birthCascader").addEventListener("click", (event) => {
+        if (event.target !== input) openPanel();
+      });
+      options.addEventListener("click", (event) => {
+        const node = event.target.closest(".el-cascader-node");
+        if (!node) return;
+        selected.push(node.textContent.trim());
+        if (selected.length === 3) {
+          input.value = selected.join(" / ");
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+          panel.hidden = true;
+        } else renderOptions();
+      });
+      document.querySelector("#fill").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoFill({
+          profile: {
+            householdRegistration: "山西省晋中市平遥县",
+            nativePlace: "山西省 / 晋中市 / 平遥县",
+            studentOrigin: "山西省 / 晋中市 / 平遥县",
+            birthPlace: "湖北省 / 武汉市 / 武昌区",
+            locations: {
+              currentResidence: { province: "湖北省", city: "武汉市", district: "洪山区" },
+            },
+          },
+          customFields: [], overwriteExisting: false,
+        });
+        const values = {
+          household: document.querySelector("#household").value,
+          householdPopup: document.querySelector("#householdPopup").value,
+          residence: residenceInput.value,
+          province: document.querySelector("#nativeProvince").value,
+          city: document.querySelector("#nativeCity").value,
+          district: document.querySelector("#nativeDistrict").value,
+          birthPlace: input.value,
+          studentOrigin: studentOriginInput.value,
+        };
+        const passed = values.household === "山西省晋中市平遥县" &&
+          values.householdPopup === "山西省 / 晋中市 / 平遥县" &&
+          values.residence === "湖北省 / 武汉市" && values.province === "山西省" &&
+          values.city === "晋中市" && values.district === "平遥县" &&
+          values.birthPlace === "湖北省 / 武汉市 / 武昌区" &&
+          values.studentOrigin === "山西省-晋中市-平遥县";
+        document.querySelector("#result").textContent = JSON.stringify({ passed, filled: report.filled, values });
+      });
+    </script>
+  </body>
+</html>

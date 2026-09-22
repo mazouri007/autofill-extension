@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo data-autofill-demo-51job>
+  <head>
+    <meta charset="UTF-8" />
+    <title>51job 家庭成员表单回归测试</title>
+    <style>
+      body { max-width: 760px; margin: 24px auto; font: 16px system-ui, sans-serif; }
+      .family { margin: 16px 0; padding: 16px; border: 1px solid #ccc; }
+      dl { display: inline-block; width: 44%; margin: 9px 2%; vertical-align: top; }
+      dt { margin-bottom: 7px; }
+      input, select { box-sizing: border-box; width: 100%; padding: 8px; font: inherit; }
+      button { padding: 9px 14px; }
+      output { display: block; margin: 12px 0; }
+      [data-personal-autofill="filled"] { background: #e7f7e9; }
+    </style>
+  </head>
+  <body>
+    <h1>家庭成员情况</h1>
+    <p>第一条是已有亲属；先点击第二条的姓名输入框，再测试逐条填写。</p>
+    <div class="family" id="existing">
+      <h2>已有亲属</h2>
+      <dl><dt>是否移动系统内任职 *</dt><dd><select><option>否</option><option>是</option></select></dd></dl>
+      <dl><dt>亲属姓名 *</dt><dd><input value="已有亲属" /></dd></dl>
+      <dl><dt>亲属关系 *</dt><dd><select><option>--请选择--</option><option selected>母子</option><option>父子</option></select></dd></dl>
+      <dl><dt>亲属性别 *</dt><dd><select><option>男</option><option selected>女</option></select></dd></dl>
+      <dl><dt>亲属出生日期 *</dt><dd><input readonly data-date-format="yyyy-MM-dd" value="1970-01-02" /></dd></dl>
+      <dl><dt>亲属政治面貌 *</dt><dd><select><option>群众</option><option selected>中共党员</option></select></dd></dl>
+      <dl><dt>亲属工作单位 *</dt><dd><input value="已有单位" /></dd></dl>
+      <dl><dt>亲属职位 *</dt><dd><input value="已有职位" /></dd></dl>
+      <dl><dt>现居住地址 *</dt><dd><select><option>--请选择--</option><option selected>上海市</option><option>湖北省</option></select><select><option>--请选择--</option><option selected>上海市</option><option>武汉市</option></select></dd></dl>
+      <dl><dt>亲属联系电话 *</dt><dd><input value="13000000000" /></dd></dl>
+    </div>
+    <div class="family" id="target">
+      <h2>空白亲属</h2>
+      <dl><dt>是否移动系统内任职 *</dt><dd><select><option>否</option><option>是</option></select></dd></dl>
+      <dl><dt>亲属姓名 *</dt><dd><input id="targetName" /></dd></dl>
+      <dl><dt>亲属关系 *</dt><dd><select><option>--请选择--</option><option>母子</option><option>父子</option></select></dd></dl>
+      <dl><dt>亲属性别 *</dt><dd><select><option>男</option><option>女</option></select></dd></dl>
+      <dl><dt>亲属出生日期 *</dt><dd><input readonly data-date-format="yyyy-MM-dd" /></dd></dl>
+      <dl><dt>亲属政治面貌 *</dt><dd><select><option>群众</option><option>中共党员</option></select></dd></dl>
+      <dl><dt>亲属工作单位 *</dt><dd><input /></dd></dl>
+      <dl><dt>亲属职位 *</dt><dd><input /></dd></dl>
+      <dl><dt>现居住地址 *</dt><dd><select id="province"><option>--请选择--</option><option>上海市</option><option>湖北省</option></select><select id="city"><option>--请选择--</option></select></dd></dl>
+      <dl><dt>亲属联系电话 *</dt><dd><input /></dd></dl>
+    </div>
+    <button type="button" id="run">填写所选亲属</button>
+    <output id="result"></output>
+    <script>
+      document.querySelector("#province").addEventListener("change", (event) => {
+        const city = document.querySelector("#city");
+        const names = event.target.value === "湖北省" ? ["武汉市"] : ["上海市"];
+        city.replaceChildren(...["--请选择--", ...names].map((name) => new Option(name, name)));
+      });
+    </script>
+    <script src="../content.js"></script>
+    <script>
+      const record = {
+        relativeName: "目标亲属", relationship: "父子", birthDate: "1968-04-10",
+        gender: "男", worksInSystem: "是", employer: "测试单位", position: "工程师",
+        phone: "13900000000", politicalStatus: "中共党员", currentAddress: "湖北省-武汉市-武昌区",
+      };
+      const initial = Array.from(document.querySelectorAll("#existing input, #existing select"), (element) => element.value);
+      document.querySelector("#run").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoRecord("familyMembers", record);
+        const existing = Array.from(document.querySelectorAll("#existing input, #existing select"), (element) => element.value);
+        const target = Array.from(document.querySelectorAll("#target input, #target select"), (element) => element.value);
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: report.status, filled: report.filled, failed: report.failed,
+          manualReview: report.manualReview, unchanged: JSON.stringify(existing) === JSON.stringify(initial), target,
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head><meta charset="UTF-8" /><title>AI 未知字段测试</title></head>
+  <body>
+    <h1>AI 未知字段测试</h1>
+    <section data-autofill-section="project">
+      <fieldset data-autofill-record>
+        <legend>项目经历</legend>
+        <label>计划代称<input id="unknownName" /></label>
+        <label>承担身份<input id="unknownRole" /></label>
+      </fieldset>
+    </section>
+    <section data-autofill-section="education">
+      <fieldset data-autofill-record>
+        <legend>高中教育经历</legend>
+        <label>就读处所<input id="highSchoolName" /></label>
+        <label>学习方向<input id="highSchoolMajor" /></label>
+      </fieldset>
+    </section>
+    <button id="fillUnknown" type="button">填写指定项目</button>
+    <button id="fillWrongStage" type="button">本科误填高中测试</button>
+    <output id="result"></output>
+    <script src="../content.js"></script>
+    <script>
+      window.__personalAutofillDemoAiMapper = async (request) => ({
+        ok: true,
+        mappings: request.fields.map((field) => ({
+          fieldId: field.id,
+          sourceKey: field.label.includes("计划代称") ? "name" : "role",
+          confidence: 0.98,
+        })),
+      });
+      document.querySelector("#fillUnknown").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoAiRecord("projects", {
+          name: "新布局项目", role: "负责人",
+        });
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: report.status,
+          filled: report.filled,
+          name: document.querySelector("#unknownName").value,
+          role: document.querySelector("#unknownRole").value,
+        });
+      });
+      document.querySelector("#fillWrongStage").addEventListener("click", async () => {
+        const report = await window.__personalAutofillDemoAiRecord("educations", {
+          school: "测试大学", educationLevel: "本科", major: "计算机科学",
+        });
+        document.querySelector("#result").textContent = JSON.stringify({
+          status: report.status, school: document.querySelector("#highSchoolName").value,
+        });
+      });
+    </script>
+  </body>
+</html>

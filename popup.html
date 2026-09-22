@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>速填</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 6h8M8 10h8M8 14h5" /><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" /></svg>
+          </span>
+          <div>
+            <h1>速填</h1>
+            <p>基础资料一键填写 · 经历逐条选择</p>
+          </div>
+        </div>
+        <span class="local-badge" id="aiModeBadge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.4 2.8 8.3 7 10 4.2-1.7 7-5.6 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>
+          资料本地保存
+        </span>
+      </header>
+
+      <button id="fillPage" class="fill-button" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 2-8 12h7l-1 8 8-12h-7l1-8Z" /></svg>
+        <span>一键填写个人及自定义信息</span>
+        <kbd>⌘ ↵</kbd>
+      </button>
+
+      <section class="manual-section" aria-label="逐条填写资料">
+        <div class="manual-heading">
+          <strong>逐条填写</strong>
+        </div>
+        <p class="manual-hint">先在网页打开目标表单；有多个同类表单时，先点目标输入框。</p>
+        <div id="recordPicker" class="record-picker"></div>
+      </section>
+
+      <button id="manageProfile" class="manage-button" type="button">
+        <span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+          管理个人资料
+        </span>
+        <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+      </button>
+
+      <p class="footnote">密码、验证码及支付字段始终跳过 · 不会自动保存或提交网页</p>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo data-autofill-demo-mobile>
+  <head>
+    <meta charset="UTF-8" />
+    <title>中国移动家庭成员控件回归测试</title>
+    <style>
+      body { max-width: 760px; margin: 24px auto; font: 16px system-ui, sans-serif; }
+      #familyInfo { border: 1px solid #ddd; padding: 20px; }
+      dl { display: inline-block; width: 45%; min-height: 64px; margin: 8px 2%; vertical-align: top; }
+      dt { margin-bottom: 7px; }
+      input, .slt, .dateSlt { box-sizing: border-box; width: 100%; min-height: 34px; padding: 7px; border: 1px solid #bbb; }
+      .slt, .dateSlt { position: relative; cursor: pointer; }
+      .slt ul { display: none; padding: 8px; background: white; border: 1px solid #ddd; }
+      .slt li, .dateSlt li { cursor: pointer; }
+      .slideCon { display: none; }
+      .slideCon ul { display: flex; flex-wrap: wrap; gap: 7px; padding: 8px; list-style: none; }
+      .citySlide { display: none; padding: 10px; border: 1px solid #ddd; background: white; }
+      .citySlide a { display: inline-block; margin: 4px; cursor: pointer; }
+      .citySlide a.active { color: #2457bd; font-weight: bold; }
+      [data-personal-autofill="filled"] { background: #ebf8ee; }
+      button { padding: 10px 16px; margin-top: 16px; }
+    </style>
+  </head>
+  <body>
+    <h1>中国移动家庭成员表单结构测试</h1>
+    <div id="familyInfo" class="secon">
+      <h3>家庭成员</h3>
+      <div class="secC" style="display:none"></div>
+      <div class="secC">
+        <div class="lf660">
+          <dl><dt>亲属姓名*</dt><dd><input id="folkName" value="请输入亲属姓名" /></dd></dl>
+          <dl><dt>与本人关系*</dt><dd><div id="folkRelationship" class="slt"><span>请选择</span><ul><li>父亲</li><li>母亲</li><li>配偶</li></ul></div></dd></dl>
+          <dl><dt>出生日期*</dt><dd>
+            <div id="family_birthday" class="dateSlt">
+              <span>请选择</span>
+              <div class="slideCon slideConYear"><p class="slideP"><a class="lf">‹</a><font></font><a class="rg">›</a></p><ul></ul></div>
+              <div class="slideCon slideConMon"><p class="slideP"><font></font></p><ul></ul></div>
+              <div class="slideCon slideConDay"><p class="slideP"><font></font></p><ul></ul></div>
+            </div>
+          </dd></dl>
+          <dl><dt>性别*</dt><dd><div id="family_sex" class="slt"><span>请选择</span><ul><li>男</li><li>女</li></ul></div></dd></dl>
+          <dl><dt>是否移动系统内任职*</dt><dd><div id="family_isEmployed" class="slt"><span>请选择</span><ul><li>是</li><li>否</li></ul></div></dd></dl>
+          <dl><dt>亲属工作单位*</dt><dd><input id="folkCompany" value="请输入亲属工作单位" /></dd></dl>
+          <dl><dt>亲属职位*</dt><dd><input id="folkJob" value="请输入亲属职位" /></dd></dl>
+          <dl><dt>联系电话*</dt><dd><input id="family_contactMobile" value="请输入联系电话" /></dd></dl>
+          <dl><dt>政治面貌*</dt><dd><div id="family_political" class="slt"><span>请选择</span><ul><li>群众</li><li>共青团员</li><li>中共党员</li></ul></div></dd></dl>
+          <dl><dt>现居住地址*</dt><dd>
+            <input id="livePlace" value="现居住地址" readonly />
+            <div class="citySlide">
+              <div class="chooseCon">
+                <dl class="dl_1"><dt>省份</dt><dd><a>湖北省</a><a>上海市</a></dd></dl>
+                <dl class="dl_2"><dt>城市</dt><dd></dd></dl>
+                <dl class="dl_3"><dt>县</dt><dd></dd></dl>
+              </div>
+              <p class="btnP"><a class="save">确认</a><a class="cancel">取消</a></p>
+            </div>
+          </dd></dl>
+        </div>
+      </div>
+      <div class="secC" style="display:none"></div>
+    </div>
+    <button type="button" id="testFill">测试填入示例家庭成员</button>
+    <button type="button" id="testUnmatched">测试不匹配选项和地区</button>
+    <output id="result"></output>
+    <script>
+      for (const select of document.querySelectorAll("#familyInfo .slt")) {
+        select.addEventListener("mouseover", () => { select.querySelector("ul").style.display = "block"; });
+        select.querySelectorAll("li").forEach((option) => option.addEventListener("click", () => {
+          select.querySelector("span").textContent = option.textContent;
+          select.querySelector("ul").style.display = "none";
+        }));
+      }
+
+      const birthday = document.querySelector("#family_birthday");
+      const yearPanel = birthday.querySelector(".slideConYear");
+      const monthPanel = birthday.querySelector(".slideConMon");
+      const dayPanel = birthday.querySelector(".slideConDay");
+      function renderYears(start) {
+        yearPanel.querySelector("font").textContent = `${start}-${start + 11}`;
+        yearPanel.querySelector("ul").replaceChildren(...Array.from({ length: 12 }, (_, offset) => {
+          const li = document.createElement("li");
+          li.textContent = start + offset;
+          li.addEventListener("click", () => {
+            yearPanel.style.display = "none";
+            monthPanel.style.display = "block";
+            monthPanel.querySelector("font").textContent = li.textContent;
+          });
+          return li;
+        }));
+      }
+      renderYears(2020);
+      birthday.addEventListener("click", (event) => {
+        if (event.target === birthday || event.target === birthday.querySelector(":scope > span")) {
+          yearPanel.style.display = "block";
+        }
+      });
+      yearPanel.querySelector(".lf").addEventListener("click", () => renderYears(Number(yearPanel.querySelector("font").textContent.slice(0, 4)) - 12));
+      yearPanel.querySelector(".rg").addEventListener("click", () => renderYears(Number(yearPanel.querySelector("font").textContent.slice(0, 4)) + 12));
+      for (let month = 1; month <= 12; month += 1) {
+        const li = document.createElement("li");
+        li.textContent = month;
+        li.addEventListener("click", () => {
+          monthPanel.style.display = "none";
+          dayPanel.style.display = "block";
+          const year = monthPanel.querySelector("font").textContent;
+          dayPanel.querySelector("font").textContent = `${year}-${String(month).padStart(2, "0")}`;
+          dayPanel.querySelector("ul").replaceChildren(...Array.from({ length: 31 }, (_, offset) => {
+            const day = document.createElement("li");
+            day.textContent = offset + 1;
+            day.addEventListener("click", () => {
+              birthday.querySelector(":scope > span").textContent = `${dayPanel.querySelector("font").textContent}-${String(offset + 1).padStart(2, "0")}`;
+              dayPanel.style.display = "none";
+            });
+            return day;
+          }));
+        });
+        monthPanel.querySelector("ul").append(li);
+      }
+
+      const address = document.querySelector("#livePlace");
+      const panel = document.querySelector(".citySlide");
+      const cityMap = { "湖北省": ["武汉市"], "上海市": ["上海市"] };
+      const countyMap = { "武汉市": ["武昌区"], "上海市": ["浦东新区"] };
+      address.addEventListener("click", () => { panel.style.display = "block"; });
+      function addLocationOptions(container, names, nextContainer, nextMap) {
+        container.replaceChildren(...names.map((name) => {
+          const link = document.createElement("a");
+          link.textContent = name;
+          link.addEventListener("click", () => {
+            container.querySelectorAll("a").forEach((item) => item.classList.remove("active"));
+            link.classList.add("active");
+            if (nextContainer) addLocationOptions(nextContainer, nextMap[name] || [], null, null);
+          });
+          return link;
+        }));
+      }
+      const provinces = panel.querySelector(".dl_1 dd");
+      const cities = panel.querySelector(".dl_2 dd");
+      const counties = panel.querySelector(".dl_3 dd");
+      provinces.querySelectorAll("a").forEach((province) => province.addEventListener("click", () => {
+        provinces.querySelectorAll("a").forEach((item) => item.classList.remove("active"));
+        province.classList.add("active");
+        addLocationOptions(cities, cityMap[province.textContent] || [], counties, countyMap);
+      }));
+      panel.querySelector(".save").addEventListener("click", () => {
+        const parts = Array.from(panel.querySelectorAll(".chooseCon a.active"), (item) => item.textContent);
+        if (parts.length === 3) {
+          address.value = parts.join("-");
+          panel.style.display = "none";
+        }
+      });
+      panel.querySelector(".cancel").addEventListener("click", () => { panel.style.display = "none"; });
+    </script>
+    <script src="../content.js"></script>
+    <script>
+      async function runFillTest(unmatched) {
+        const record = {
+          relativeName: "测试亲属", relationship: unmatched ? "不存在的关系" : "父亲", birthDate: "1968-04-10", gender: "男",
+          worksInSystem: "否", employer: "测试单位", position: "职员", phone: "13800000000",
+          politicalStatus: "群众", currentAddress: unmatched ? "湖北省-武汉市-不存在区" : "湖北省-武汉市-武昌区",
+        };
+        const result = await window.__personalAutofillDemoRecord("familyMembers", record);
+        document.querySelector("#result").textContent = `${result.status}：${result.filled} 项成功，${result.failed} 项失败，${result.skipped} 项跳过`;
+      }
+      document.querySelector("#testFill").addEventListener("click", () => runFillTest(false));
+      document.querySelector("#testUnmatched").addEventListener("click", () => runFillTest(true));
+    </script>
+  </body>
+</html>
