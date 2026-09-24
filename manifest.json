@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "个人信息自动填写助手",
-  "version": "3.3.15",
-  "description": "DeepSeek AI 辅助定位表单和匹配字段，个人资料一键填写，经历及家庭成员由用户逐条选择。",
+  "version": "3.4.6",
+  "description": "通用自适应表单引擎，支持复合日期与地区精度适配，并由 DeepSeek AI 辅助陌生页面识别。",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["https://api.deepseek.com/*"],
   "background": { "service_worker": "background.js" },

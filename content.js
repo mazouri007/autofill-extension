@@ -110,8 +110,8 @@
         ["major", /主修专业|所学专业|专业名称|专业|speciality|specialty|major/i],
         ["location", /学校所在地|学校地点|院校所在地|school\s*(?:place|location)|所在地/i],
         ["classRanking", /班级排名|专业排名|成绩排名|class\s*ranking|rank/i],
-        ["startDate", /入学时间|入校时间|教育开始|开始时间|起始时间|entrance|start|begin|from/i],
-        ["endDate", /毕业时间|教育结束|结束时间|截止时间|graduate|graduation|end|to/i],
+        ["startDate", /入学时间|入校时间|教育开始|开始(?:时间|日期)|起始(?:时间|日期)|entrance|start|begin|from/i],
+        ["endDate", /毕业时间|教育结束|结束(?:时间|日期)|截止(?:时间|日期)|graduate|graduation|end|to/i],
         ["current", /目前在读|正在就读|在读|至今|current/i],
         ["primary", /主要教育经历|是否主要|最高学历经历|primary/i],
         ["description", /在校经历|教育描述|补充说明|课程|学生干部|description|detail/i],
@@ -130,8 +130,8 @@
         ["location", /工作地点|工作所在地|任职地点|work\s*(?:place|location)|location/i],
         ["workType", /工作形式|工作类型|任职类型|用工类型|work\s*type|employment\s*type/i],
         ["level", /岗位级别|职级|职位级别|duty\s*level|job\s*level/i],
-        ["startDate", /入职时间|工作开始|开始时间|起始时间|start|begin|from/i],
-        ["endDate", /离职时间|工作结束|结束时间|截止时间|end|to/i],
+        ["startDate", /入职时间|工作开始|开始(?:时间|日期)|起始(?:时间|日期)|start|begin|from/i],
+        ["endDate", /离职时间|工作结束|结束(?:时间|日期)|截止(?:时间|日期)|end|to/i],
         ["current", /目前在职|仍在职|在职|至今|current/i],
         ["responsibilities", /工作内容|主要职责|岗位职责|职责描述|工作描述|responsibilit|description/i],
         ["achievements", /工作业绩|主要业绩|工作成果|业绩描述|performance|achievement/i],
@@ -147,8 +147,8 @@
         ["role", /项目角色|担任角色|项目岗位|职责角色|project\s*role|role/i],
         ["company", /所属单位|项目单位|公司|organization|company/i],
         ["technologies", /技术栈|使用技术|技术工具|开发工具|technolog|tools?/i],
-        ["startDate", /项目开始|开始时间|起始时间|start|begin|from/i],
-        ["endDate", /项目结束|结束时间|截止时间|end|to/i],
+        ["startDate", /项目开始|开始(?:时间|日期)|起始(?:时间|日期)|start|begin|from/i],
+        ["endDate", /项目结束|结束(?:时间|日期)|截止(?:时间|日期)|end|to/i],
         ["current", /仍在进行|进行中|至今|current|ongoing/i],
         ["description", /项目描述|项目内容|项目介绍|主要工作|项目职责|description|detail/i],
         ["achievements", /项目成果|项目业绩|项目成就|产出|achievement|result/i],
@@ -306,6 +306,19 @@
       .trim();
   }
 
+  function cleanFieldLabelText(value) {
+    return String(value || "")
+      .replace(/(?:最多|不超过|限)\s*\d+\s*(?:个?字|字符)?/gi, " ")
+      .replace(/已输入\s*\d+\s*(?:个?字|字符)?/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isHelperOnlyLabel(value) {
+    const cleaned = cleanFieldLabelText(value).replace(/[：:*＊\s]/g, "");
+    return !cleaned || /^(?:必填|选填|内容|请输入|请选择)$/.test(cleaned);
+  }
+
   function textOfLabel(element) {
     const labels = [];
     if (element.labels) labels.push(...Array.from(element.labels, (label) => label.innerText));
@@ -360,8 +373,8 @@
         for (let count = 0; sibling && count < 4; count += 1, sibling = sibling.previousSibling) {
           if (sibling.nodeType === Node.TEXT_NODE) {
             const text = String(sibling.textContent || "").replace(/\s+/g, " ").trim();
-            if (text && text.length <= 120) {
-              labels.push(text);
+            if (text && text.length <= 120 && !isHelperOnlyLabel(text)) {
+              labels.push(cleanFieldLabelText(text));
               break siblingSearch;
             }
             continue;
@@ -369,15 +382,38 @@
           if (sibling.nodeType !== Node.ELEMENT_NODE) continue;
           if (sibling.matches?.(CONTROL_SELECTOR) || sibling.querySelector?.(CONTROL_SELECTOR)) break;
           const text = String(sibling.innerText || sibling.textContent || "").replace(/\s+/g, " ").trim();
-          if (text && text.length <= 120) {
-            labels.push(text);
+          if (text && text.length <= 120 && !isHelperOnlyLabel(text)) {
+            labels.push(cleanFieldLabelText(text));
             break siblingSearch;
           }
         }
       }
     }
 
-    return [...new Set(labels.map((label) => String(label || "").trim()).filter(Boolean))].join(" ");
+    // Legacy forms often put a visual caption and character counter around a deeply nested
+    // textarea without a label element or sibling relationship. For a small container that
+    // owns exactly one control, remove the control from a clone and use the remaining text as
+    // its local label. This stays bounded so text from adjacent fields cannot leak in.
+    if (!labels.some((label) => String(label || "").trim())) {
+      for (let ancestor = element.parentElement, depth = 0;
+        ancestor && ancestor !== document.body && depth < 6;
+        ancestor = ancestor.parentElement, depth += 1) {
+        const controls = Array.from(ancestor.querySelectorAll(CONTROL_SELECTOR));
+        if (controls.length !== 1 || controls[0] !== element) {
+          if (controls.length > 4) break;
+          continue;
+        }
+        const clone = ancestor.cloneNode(true);
+        clone.querySelectorAll(`${CONTROL_SELECTOR}, script, style, button`).forEach((node) => node.remove());
+        const text = cleanFieldLabelText(clone.textContent).replace(/^[：:*＊\s,，;；]+|[：:*＊\s,，;；]+$/g, "");
+        if (text && text.length <= 180 && !isHelperOnlyLabel(text)) {
+          labels.push(text);
+          break;
+        }
+      }
+    }
+
+    return [...new Set(labels.map(cleanFieldLabelText).filter(Boolean))].join(" ");
   }
 
   function fieldHints(element) {
@@ -550,7 +586,7 @@
 
   function isVisible(element) {
     if (!element?.isConnected || element.getClientRects().length === 0) return false;
-    const style = window.getComputedStyle(element);
+    const style = (element.ownerDocument?.defaultView || window).getComputedStyle(element);
     return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
   }
 
@@ -650,8 +686,32 @@
     return matchingGroup ? [value, ...matchingGroup] : [value];
   }
 
+  function numericOptionValue(value) {
+    const text = String(value || "").trim();
+    const match = text.match(/^0*(\d{1,4})\s*(?:年|月份?|日|号)?$/);
+    return match ? Number(match[1]) : null;
+  }
+
+  function numericDateLabelValue(value) {
+    const exact = numericOptionValue(value);
+    if (exact !== null) return exact;
+    const numbers = String(value || "").match(/\d{1,4}/g) || [];
+    const unique = [...new Set(numbers.map(Number))];
+    return unique.length === 1 ? unique[0] : null;
+  }
+
+  function numericDateOptionValue(option) {
+    const labelNumber = numericDateLabelValue(option?.textContent);
+    return labelNumber !== null ? labelNumber : numericDateLabelValue(option?.value);
+  }
+
   function optionScore(optionText, value) {
     const option = normalizeMatchText(optionText);
+    const optionNumber = numericOptionValue(optionText);
+    const expectedNumber = numericOptionValue(value);
+    if (optionNumber !== null && expectedNumber !== null) {
+      return optionNumber === expectedNumber ? 100 : 0;
+    }
     let best = 0;
     for (const alias of aliasesFor(value)) {
       const expected = normalizeMatchText(alias);
@@ -761,12 +821,29 @@
     return 0;
   }
 
+  function controlAtomicHints(element) {
+    const control = element.querySelector?.("input:not([type='hidden']), select") || element;
+    const labelledBy = control.getAttribute?.("aria-labelledby")
+      ?.split(/\s+/).map((id) => control.ownerDocument?.getElementById(id)?.textContent || "").join(" ");
+    const parentLabel = control.closest?.("label");
+    return [
+      control.name, control.id, control.getAttribute?.("placeholder"), control.getAttribute?.("aria-label"),
+      control.getAttribute?.("title"), control.getAttribute?.("data-field"),
+      control instanceof HTMLSelectElement ? control.options[0]?.textContent : "",
+      labelledBy, directText(parentLabel),
+    ].map(compactText).filter(Boolean);
+  }
+
   function locationLevelForField(element) {
     const hints = normalizeMatchText(fieldHints(element));
+    const atomicHints = controlAtomicHints(element);
     const levels = [
-      /province|state|省份|所属省|户籍省|籍贯省|生源省|出生省|居住省/.test(hints),
-      /city|prefecture|城市|所属市|户籍市|籍贯市|生源市|出生市|居住市/.test(hints),
-      /district|county|区县|县区|所属区|所属县|户籍区|籍贯区|生源区|出生区|居住区/.test(hints),
+      /province|state|省份|所属省|户籍省|籍贯省|生源省|出生省|居住省|(?:^|户籍|户口|籍贯|生源|出生地?|现居|现住)省(?:份)?$/.test(hints) ||
+        atomicHints.some((hint) => /^(?:省|省份|province|state)$/.test(hint)),
+      /city|prefecture|城市|所属市|户籍市|籍贯市|生源市|出生市|居住市|(?:^|户籍|户口|籍贯|生源|出生地?|现居|现住)市$/.test(hints) ||
+        atomicHints.some((hint) => /^(?:市|城市|city|prefecture)$/.test(hint)),
+      /district|county|区县|县区|所属区|所属县|户籍区|籍贯区|生源区|出生区|居住区|(?:^|户籍|户口|籍贯|生源|出生地?|现居|现住)(?:区|县|区县)$/.test(hints) ||
+        atomicHints.some((hint) => /^(?:区|县|区县|县区|district|county)$/.test(hint)),
     ];
     return levels.filter(Boolean).length === 1 ? levels.findIndex(Boolean) : null;
   }
@@ -982,19 +1059,25 @@
     if (!parts.length) return false;
     if (element instanceof HTMLSelectElement) return setLocationSelectValue(element, value);
     if (cascaderWrapper(element)) return setCascaderLocationValue(element, value);
+    const level = locationLevelForField(element);
+    const projectedValue = level === null ? String(value) : parts[level];
+    if (!projectedValue) return false;
     if (isCustomControl(element)) {
-      const level = locationLevelForField(element);
-      if (level !== null) return setCustomSelectValue(element, parts[level] || parts[0]);
+      if (level !== null) return setCustomSelectValue(element, projectedValue);
       const selected = await setGenericPopupLocationValue(element, value);
       if (selected) return true;
       return parts.length === 1 ? setCustomSelectValue(element, parts[0]) : false;
     }
+    if (!element.readOnly && level !== null) {
+      setNativeValue(element, projectedValue);
+      return true;
+    }
     if (element.readOnly || hasLocationControlHints(element)) {
-      const selected = await setGenericPopupLocationValue(element, value);
+      const selected = await setGenericPopupLocationValue(element, projectedValue);
       if (selected) return true;
       if (element.readOnly) return false;
     }
-    setNativeValue(element, String(value));
+    setNativeValue(element, projectedValue);
     return true;
   }
 
@@ -1017,8 +1100,12 @@
     if (type === "month") return "month";
     if (element.closest?.(".ant-picker-month, .ant-calendar-month-picker, [data-picker='month']")) return "month";
     if (element instanceof HTMLInputElement && element.maxLength > 0 && element.maxLength <= 7) return "month";
-    if (/y{2,4}\s*[-/.年]?\s*m{1,2}\s*[-/.月]?\s*d{1,2}|年.{0,8}月.{0,8}日|年月日|日期|生日|birth[-_ ]?date|birthday/i.test(hints)) return "day";
-    if (/y{2,4}\s*[-/.年]?\s*m{1,2}|年月|月份|year[-_ ]?month/i.test(hints)) return "month";
+    // Explicit format tokens take precedence over a surrounding semantic label. A YYYY-MM
+    // input is still month-precision even when its field caption is the generic “结束日期”.
+    if (/y{2,4}\s*[-/.年]?\s*m{1,2}\s*[-/.月]?\s*d{1,2}|年.{0,8}月.{0,8}日|年月日/i.test(hints)) return "day";
+    if (/y{2,4}\s*[-/.年]?\s*m{1,2}|年月|year[-_ ]?month/i.test(hints)) return "month";
+    if (/日期|生日|birth[-_ ]?date|birthday/i.test(hints)) return "day";
+    if (/月份/i.test(hints)) return "month";
     return "day";
   }
 
@@ -1047,9 +1134,21 @@
     return precision === "month" ? `${year}-${month}` : `${year}-${month}-${day}`;
   }
 
-  function visibleAntCalendar() {
-    return Array.from(document.querySelectorAll(".ant-calendar-picker-container, .ant-picker-dropdown"))
-      .find((calendar) => isVisible(calendar));
+  function visibleAntCalendarFor(element) {
+    const selector = ".ant-calendar-picker-container, .ant-picker-dropdown";
+    const wrapper = element.closest?.(".ant-calendar-picker, .ant-picker") || element;
+    // Ant Design can leave the previous picker visible during its closing animation.
+    // Some sites render each popup beside its own input instead of under document.body.
+    for (let ancestor = wrapper.parentElement, depth = 0;
+      ancestor && ancestor !== document.body && depth < 5;
+      ancestor = ancestor.parentElement, depth += 1) {
+      const calendars = Array.from(ancestor.querySelectorAll(selector)).filter(isVisible);
+      if (calendars.length === 1) return calendars[0];
+    }
+    const calendars = Array.from(document.querySelectorAll(selector)).filter(isVisible);
+    // If two body-level popups are still visible, choosing either by DOM order risks
+    // writing an end date into the start field. Leave the field for manual review.
+    return calendars.length === 1 ? calendars[0] : null;
   }
 
   function visibleElementCalendar() {
@@ -1128,15 +1227,51 @@
     }) || null;
   }
 
+  function reachableDocuments(rootDocument = document, seen = new Set()) {
+    if (!rootDocument || seen.has(rootDocument)) return [];
+    seen.add(rootDocument);
+    const documents = [rootDocument];
+    for (const frame of rootDocument.querySelectorAll("iframe, frame")) {
+      try {
+        if (frame.contentDocument) documents.push(...reachableDocuments(frame.contentDocument, seen));
+      } catch (_) { /* Cross-origin frames are handled by the content script running in that frame. */ }
+    }
+    return documents;
+  }
+
   function visibleGenericDateCalendar() {
-    return Array.from(document.querySelectorAll([
+    const selectors = [
       ".ivu-date-picker-transfer", ".ivu-select-dropdown", ".mx-datepicker-popup",
       ".react-datepicker-popper", ".van-calendar__popup", "[class*='date-picker-panel']",
       "[class*='datePickerPanel']", "[class*='datepicker-panel']", "[class*='calendar-panel']",
       "[class*='calendarPanel']", "[class*='picker-panel']", "[role='dialog']", "[role='grid']",
-    ].join(", "))).find((calendar) => isVisible(calendar) && Boolean(calendar.querySelector(
-      "td, [role='gridcell'], [data-date], [data-day], [aria-label], button",
-    ))) || null;
+      "#_my97DP", "[id*='datePicker']", "[id*='datepicker']",
+    ].join(", ");
+    for (const currentDocument of reachableDocuments()) {
+      const explicit = Array.from(currentDocument.querySelectorAll(selectors)).find((calendar) =>
+        isVisible(calendar) && Boolean(calendar.querySelector(
+          "td, [role='gridcell'], [data-date], [data-day], [aria-label], button, select",
+        )));
+      if (explicit) return explicit;
+      if (currentDocument !== document && currentDocument.body && isVisible(currentDocument.body) &&
+        currentDocument.body.querySelector("td, [role='gridcell'], [data-date], button, select")) {
+        return currentDocument.body;
+      }
+    }
+    return null;
+  }
+
+  function adjacentDateActivationTargets(element) {
+    const parent = element.parentElement;
+    if (!parent) return [];
+    const candidates = Array.from(parent.querySelectorAll("a, button, [role='button']"))
+      .filter((candidate) => candidate !== element && isVisible(candidate));
+    const likely = candidates.filter((candidate) => /date|calendar|日期|时间|日历|wdate|my97/i.test([
+      candidate.className, candidate.id, candidate.getAttribute("title"), candidate.getAttribute("aria-label"),
+      candidate.getAttribute("href"), candidate.getAttribute("onclick"), candidate.textContent,
+    ].filter(Boolean).join(" ")));
+    if (likely.length) return likely.slice(0, 3);
+    return candidates.length === 1 && !String(candidates[0].textContent || "").trim() ? candidates : [];
   }
 
   function dateCellParts(candidate) {
@@ -1180,12 +1315,16 @@
     const day = match[3] ? Number(match[3]) : null;
     if (await directDateInputFallback(element, value, year, month, day)) return true;
 
-    element.focus?.();
-    element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-    element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-    element.click?.();
-    await wait(140);
-    const calendar = visibleGenericDateCalendar();
+    let calendar = null;
+    for (const target of [element, ...adjacentDateActivationTargets(element)]) {
+      target.focus?.();
+      target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+      target.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+      target.click?.();
+      await wait(140);
+      calendar = visibleGenericDateCalendar();
+      if (calendar) break;
+    }
     if (!calendar || day === null) return false;
     const cell = genericDateCell(calendar, year, month, day);
     if (!cell) return false;
@@ -1307,7 +1446,7 @@
     element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     element.click();
     await wait(100);
-    const calendar = visibleAntCalendar();
+    let calendar = visibleAntCalendarFor(element);
     if (!calendar) return false;
 
     const yearSelect = calendar.querySelector(".ant-calendar-year-select, .ant-picker-year-btn");
@@ -1323,6 +1462,7 @@
         await wait(16);
       }
       if (Math.abs(yearDifference) > 20) return false;
+      calendar = visibleAntCalendarFor(element) || calendar;
     }
 
     if (targetDay === null) {
@@ -1353,6 +1493,7 @@
         monthButton.click();
         await wait(16);
       }
+      calendar = visibleAntCalendarFor(element) || calendar;
     }
 
     const dateValue = `${String(targetYear).padStart(4, "0")}-${String(targetMonth).padStart(2, "0")}-${String(targetDay).padStart(2, "0")}`;
@@ -1404,6 +1545,282 @@
     return true;
   }
 
+  function optionNumbers(element) {
+    const nativeOptions = element instanceof HTMLSelectElement ? Array.from(element.options) : [];
+    const nestedOptions = nativeOptions.length ? nativeOptions : Array.from(element.querySelectorAll?.(
+      "option, [role='option'], li",
+    ) || []);
+    return nestedOptions.map((option) => Number(String(
+      option.textContent || option.getAttribute?.("value") || "",
+    ).match(/\d{1,4}/)?.[0])).filter(Number.isFinite);
+  }
+
+  function datePartForControl(element) {
+    const nested = element.querySelector?.("input:not([type='hidden']), select");
+    const control = nested && isVisible(nested) ? nested : element;
+    const type = String(control.getAttribute?.("type") || "").toLowerCase();
+    if (["date", "month"].includes(type)) return null;
+    const hints = compactText([
+      control.getAttribute?.("placeholder"), control.getAttribute?.("aria-label"),
+      control.getAttribute?.("title"), control.getAttribute?.("data-field"), fieldHints(element),
+    ].filter(Boolean).join(" "));
+    const atomicHints = controlAtomicHints(element);
+    const flags = [
+      /(?:^|时间|日期|开始|结束|出生|入学|毕业|入职|离职)(?:年份?|year)|年份|选择年|^年$/i.test(hints) ||
+        atomicHints.some((hint) => /^(?:年|年份|year)$/.test(hint)),
+      /(?:^|时间|日期|开始|结束|出生|入学|毕业|入职|离职)(?:月份?|month)|月份|选择月|^月$/i.test(hints) ||
+        atomicHints.some((hint) => /^(?:月|月份|month)$/.test(hint)),
+      /(?:^|时间|日期|开始|结束|出生)(?:日(?!期)|day)|选择日(?!期)|^日$/i.test(hints) ||
+        atomicHints.some((hint) => /^(?:日|day)$/.test(hint)),
+    ];
+    if (flags.filter(Boolean).length === 1) return ["year", "month", "day"][flags.findIndex(Boolean)];
+    if (!/时间|日期|年份?|月份?|年月|start|end|date|from|to|毕业|入学|入职|离职|出生/i.test(hints)) {
+      return null;
+    }
+    const numbers = optionNumbers(element);
+    if (numbers.filter((number) => number >= 1900 && number <= 2200).length >= 2) return "year";
+    if (numbers.length >= 6 && numbers.every((number) => number >= 1 && number <= 12)) return "month";
+    if (numbers.length >= 13 && numbers.every((number) => number >= 1 && number <= 31)) return "day";
+    return null;
+  }
+
+  function dateSourceFromText(value, section) {
+    const text = compactText(value);
+    if (section === "family" && /出生|生日|birth/.test(text)) return "birthDate";
+    if (/入学|入校|入职|开始|起始|起聘|from|start|begin|entrance/i.test(text)) return "startDate";
+    if (/毕业|离职|结束|截止|终止|退休|to|end|graduate/i.test(text)) return "endDate";
+    return null;
+  }
+
+  function commonElementAncestor(elements) {
+    if (!elements.length) return null;
+    let current = elements[0].parentElement;
+    while (current && current !== document.body) {
+      if (elements.every((element) => current.contains(element))) return current;
+      current = current.parentElement;
+    }
+    return null;
+  }
+
+  function compoundContextText(elements) {
+    const ancestor = commonElementAncestor(elements);
+    if (!ancestor) return elements.map(fieldHints).join(" ");
+    const headings = Array.from(ancestor.querySelectorAll(
+      ":scope > legend, :scope > h1, :scope > h2, :scope > h3, :scope > h4, " +
+      ":scope > [role='heading'], :scope > [class*='title'], :scope > [class*='label']",
+    )).slice(0, 8).map((item) => item.textContent || "");
+    return [directText(ancestor), ...headings, ...elements.map(fieldHints)].join(" ").slice(0, 1000);
+  }
+
+  function dateParts(value) {
+    const match = String(value || "").match(/^(\d{4})\D?(\d{1,2})(?:\D?(\d{1,2}))?/);
+    return match ? { year: Number(match[1]), month: Number(match[2]), day: match[3] ? Number(match[3]) : null } : null;
+  }
+
+  function numericControlValue(element) {
+    if (element instanceof HTMLSelectElement) {
+      const selected = element.selectedOptions[0];
+      const selectedNumber = numericDateOptionValue(selected);
+      return selectedNumber === null ? Number.NaN : selectedNumber;
+    }
+    const displayed = readControlValue(element);
+    const number = numericDateLabelValue(displayed);
+    return number === null ? Number.NaN : number;
+  }
+
+  async function setDatePartControl(element, component, part) {
+    if (!Number.isFinite(part)) return false;
+    if (element instanceof HTMLSelectElement) {
+      const matches = Array.from(element.options).filter((option) =>
+        numericDateOptionValue(option) === part);
+      if (matches.length !== 1) return false;
+      setNativeValue(element, matches[0].value);
+      await wait(30);
+      return numericControlValue(element) === part;
+    }
+    if (isCustomControl(element)) {
+      if (!await setCustomSelectValue(element, String(part))) return false;
+      await wait(40);
+      return numericControlValue(element) === part;
+    }
+    const plain = String(part);
+    const padded = plain.padStart(2, "0");
+    const values = component === "year" ? [plain] : [...new Set([padded, plain])];
+    for (const value of values) {
+      setNativeValue(element, value);
+      await wait(50);
+      if (numericControlValue(element) === part) return true;
+    }
+    return false;
+  }
+
+  function controlCapability(element) {
+    return {
+      datePart: datePartForControl(element),
+      locationLevel: locationLevelForField(element),
+      adjacentDateTrigger: adjacentDateActivationTargets(element).length > 0,
+      readOnly: Boolean(element.readOnly || element.querySelector?.("input[readonly]")),
+    };
+  }
+
+  function isWholeDateControl(element) {
+    if (datePartForControl(element)) return false;
+    const nested = element.querySelector?.("input:not([type='hidden']), select");
+    const control = nested && isVisible(nested) ? nested : element;
+    const type = String(control.getAttribute?.("type") || "").toLowerCase();
+    if (["date", "month"].includes(type) || isInteractiveDateControl(element)) return true;
+    const hints = dateFormatHints(element);
+    if (/yyyy|yy[-/.年]m|datefmt|datepicker|calendar|日期|出生年月|开始时间|结束时间|入职时间|离职时间/i.test(hints)) {
+      return true;
+    }
+    return Boolean((control.readOnly || element.readOnly) && adjacentDateActivationTargets(element).length);
+  }
+
+  async function fillCompoundDateFields(section, record, elements, overwriteExisting, report) {
+    const candidates = Array.from(new Set(elements || []))
+      .filter((element) => element?.isConnected && isVisible(element) && !element.disabled)
+      .map((element) => ({
+        element,
+        component: datePartForControl(element) || (isWholeDateControl(element) ? "whole" : null),
+      }))
+      .filter(({ component }) => Boolean(component))
+      .sort((a, b) => a.element === b.element ? 0 :
+        a.element.compareDocumentPosition(b.element) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+    const handled = new Set();
+    handled.sourceKeys = new Set();
+    if (!candidates.length) return handled;
+
+    const context = compoundContextText(candidates.map(({ element }) => element));
+    const contextSource = dateSourceFromText(context, section);
+    const supportsRange = section !== "family" && (record?.startDate || record?.endDate);
+    let activeSource = section === "family" ? "birthDate" : contextSource || "startDate";
+    const seenParts = new Set();
+
+    for (const candidate of candidates) {
+      const explicit = classifyStructuredField(candidate.element, section);
+      let sourceKey = ["startDate", "endDate", "birthDate"].includes(explicit) ? explicit : null;
+      if (!sourceKey) sourceKey = dateSourceFromText(fieldHints(candidate.element), section);
+      if (!sourceKey) {
+        if (supportsRange && seenParts.has(candidate.component)) {
+          activeSource = "endDate";
+          seenParts.clear();
+        }
+        sourceKey = activeSource;
+      } else {
+        activeSource = sourceKey;
+        if (sourceKey === "endDate" && seenParts.size) seenParts.clear();
+      }
+      seenParts.add(candidate.component);
+      if (!record?.[sourceKey] || (sourceKey === "endDate" && record.current)) {
+        handled.add(candidate.element);
+        continue;
+      }
+      handled.sourceKeys.add(sourceKey);
+      handled.add(candidate.element);
+      if (candidate.component === "whole") {
+        if (aiValuesEquivalent(candidate.element, record[sourceKey], sourceKey)) {
+          report.unchanged += 1;
+          continue;
+        }
+        if (!isUsable(candidate.element, overwriteExisting, sourceKey)) {
+          report.skipped += 1;
+          continue;
+        }
+        try {
+          if (!await setControlValue(candidate.element, record[sourceKey], sourceKey)) {
+            report.failed += 1;
+            continue;
+          }
+          candidate.element.dataset.personalAutofill = "filled";
+          report.filled += 1;
+          report.sections[section] += 1;
+        } catch (_) {
+          report.failed += 1;
+        }
+        continue;
+      }
+      const parts = dateParts(record[sourceKey]);
+      const wanted = parts?.[candidate.component];
+      if (!Number.isFinite(wanted)) continue;
+      const existing = numericControlValue(candidate.element);
+      if (existing === wanted) {
+        report.unchanged += 1;
+        continue;
+      }
+      if (existing && !overwriteExisting) {
+        report.skipped += 1;
+        continue;
+      }
+      try {
+        if (!await setDatePartControl(candidate.element, candidate.component, wanted)) {
+          report.failed += 1;
+          continue;
+        }
+        candidate.element.dataset.personalAutofill = "filled";
+        report.filled += 1;
+        report.sections[section] += 1;
+      } catch (_) {
+        report.failed += 1;
+      }
+    }
+    return handled;
+  }
+
+  async function fillKnownStructuredFields(section, record, elements, overwriteExisting, report, initialHandled) {
+    const handled = initialHandled || new Set();
+    const sourceKeys = new Set(initialHandled?.sourceKeys || []);
+    const usedKeys = new Set();
+    const fallbackKeysBySection = {
+      education: ["description"],
+      work: ["responsibilities", "achievements"],
+      project: ["description", "achievements"],
+    };
+    const unclassifiedTextareas = (elements || []).filter((element) =>
+      (element instanceof HTMLTextAreaElement || element.isContentEditable) &&
+      !classifyStructuredField(element, section) && !handled.has(element) &&
+      element.isConnected && isVisible(element) && !isProtectedField(element));
+    const fallbackAssignments = new Map();
+    const fallbackKeys = (fallbackKeysBySection[section] || []).filter((key) => {
+      const value = valueForStructuredField(section, record, key);
+      return value !== "" && value !== undefined && value !== null && value !== false;
+    });
+    for (let index = 0; index < Math.min(unclassifiedTextareas.length, fallbackKeys.length); index += 1) {
+      fallbackAssignments.set(unclassifiedTextareas[index], fallbackKeys[index]);
+    }
+    for (const element of elements || []) {
+      if (handled.has(element) || !element?.isConnected || !isVisible(element) || isProtectedField(element)) continue;
+      const key = classifyStructuredField(element, section) || fallbackAssignments.get(element);
+      if (!key || usedKeys.has(key)) continue;
+      const value = valueForStructuredField(section, record, key);
+      if (value === "" || value === undefined || value === null || value === false) continue;
+      if (element instanceof HTMLInputElement && ["checkbox", "radio"].includes(element.type) &&
+        typeof value !== "boolean") continue;
+      usedKeys.add(key);
+      sourceKeys.add(key);
+      handled.add(element);
+      if (aiValuesEquivalent(element, value, key)) {
+        report.unchanged += 1;
+        continue;
+      }
+      if (!isUsable(element, overwriteExisting, key)) {
+        report.skipped += 1;
+        continue;
+      }
+      try {
+        if (!await setControlValue(element, value, key)) {
+          report.failed += 1;
+          continue;
+        }
+        element.dataset.personalAutofill = "filled";
+        report.filled += 1;
+        report.sections[section] += 1;
+      } catch (_) {
+        report.failed += 1;
+      }
+    }
+    return { handled, sourceKeys };
+  }
+
   function profileValue(profile, key) {
     if (profile[key]) return profile[key];
     if (LOCATION_PROFILE_KEYS.has(key) && profile.locations?.[key]) {
@@ -1412,6 +1829,70 @@
     }
     if (key === "fullName") return `${profile.lastName || ""}${profile.firstName || ""}`.trim();
     return "";
+  }
+
+  function locationProfileKeyFromText(value) {
+    const text = compactText(value);
+    const matches = [
+      ["householdRegistration", /户籍|户口|household|hukou/i],
+      ["nativePlace", /籍贯|nativeplace|placeoforigin/i],
+      ["studentOrigin", /生源|studentorigin/i],
+      ["birthPlace", /出生地|出生地点|birthplace/i],
+      ["currentResidence", /现居|现住|currentresidence|residential/i],
+    ].filter(([, pattern]) => pattern.test(text));
+    return matches.length === 1 ? matches[0][0] : null;
+  }
+
+  function locationGroupKey(element) {
+    const directKey = classifyBasicField(element);
+    if (LOCATION_PROFILE_KEYS.has(directKey)) return directKey;
+    let node = element.parentElement;
+    for (let depth = 0; node && node !== document.body && depth < 7; depth += 1, node = node.parentElement) {
+      const controls = Array.from(node.querySelectorAll(CONTROL_SELECTOR)).filter(isVisible);
+      if (!controls.length || controls.length > 6) continue;
+      const headings = Array.from(node.querySelectorAll(
+        ":scope > legend, :scope > h1, :scope > h2, :scope > h3, :scope > h4, " +
+        ":scope > [role='heading'], :scope > [class*='title']",
+      )).map((item) => item.textContent || "");
+      const key = locationProfileKeyFromText(`${structuralText(node)} ${directText(node)} ${headings.join(" ")}`);
+      if (key) return key;
+    }
+    return null;
+  }
+
+  async function fillCompoundBasicLocations(profile, controls, overwriteExisting, state, report) {
+    const groups = new Map();
+    for (const element of controls) {
+      const level = locationLevelForField(element);
+      if (level === null) continue;
+      const key = locationGroupKey(element);
+      if (!key || !profileValue(profile, key)) continue;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({ element, level });
+    }
+    for (const [key, fields] of groups) {
+      const uniqueLevels = new Set(fields.map(({ level }) => level));
+      if (uniqueLevels.size !== fields.length) continue;
+      const value = profileValue(profile, key);
+      for (const { element } of fields) {
+        state.filledElements.add(element);
+        if (!isUsable(element, overwriteExisting, key)) {
+          report.skipped += 1;
+          continue;
+        }
+        try {
+          if (!await setLocationControlValue(element, value)) {
+            report.failed += 1;
+            continue;
+          }
+          element.dataset.personalAutofill = "filled";
+          report.filled += 1;
+          report.sections.basic += 1;
+        } catch (_) {
+          report.failed += 1;
+        }
+      }
+    }
   }
 
   function customFieldValue(element, customFields) {
@@ -1543,7 +2024,12 @@
         continue;
       }
       const currentGroup = groupByContainer.get(descriptor.container);
-      if (!currentGroup || currentGroup.fields.some((field) => field.key === descriptor.key)) {
+      const duplicate = currentGroup?.fields.some((field) => field.key === descriptor.key);
+      const compoundDateDuplicate = duplicate && ["startDate", "endDate", "birthDate"].includes(descriptor.key) &&
+        Boolean(datePartForControl(descriptor.element)) && currentGroup.fields
+          .filter((field) => field.key === descriptor.key)
+          .every((field) => Boolean(datePartForControl(field.element)));
+      if (!currentGroup || (duplicate && !compoundDateDuplicate)) {
         const group = { container: descriptor.container, fields: [] };
         groupByContainer.set(descriptor.container, group);
         groups.push(group);
@@ -1553,7 +2039,12 @@
 
     let current = null;
     for (const descriptor of loose) {
-      if (!current || current.fields.some((field) => field.key === descriptor.key)) {
+      const duplicate = current?.fields.some((field) => field.key === descriptor.key);
+      const compoundDateDuplicate = duplicate && ["startDate", "endDate", "birthDate"].includes(descriptor.key) &&
+        Boolean(datePartForControl(descriptor.element)) && current.fields
+          .filter((field) => field.key === descriptor.key)
+          .every((field) => Boolean(datePartForControl(field.element)));
+      if (!current || (duplicate && !compoundDateDuplicate)) {
         current = { container: null, fields: [] };
         groups.push(current);
       }
@@ -1852,7 +2343,7 @@
   async function fill51jobProject(record, overwriteExisting) {
     const report = createReport();
     if (!String(record.name || "").trim()) return { status: "no_match", ...report };
-    const groups = fiftyOneJobProjectGroups();
+    const groups = currentViewGroups("project", fiftyOneJobProjectGroups());
     if (!groups.length) return { status: "no_target", ...report };
     const focused = groups.filter((group) => targetMatchesGroup(lastUserTarget, group));
     const group = focused.length === 1 ? focused[0] : groups.length === 1 ? groups[0] : null;
@@ -2074,6 +2565,16 @@
     return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
   }
 
+  const CURRENT_VIEW_ONLY_SECTIONS = new Set(["education", "work", "project"]);
+
+  function groupHasViewportField(group) {
+    return group.fields.some(({ element }) => isInViewport(element));
+  }
+
+  function currentViewGroups(section, groups) {
+    return CURRENT_VIEW_ONLY_SECTIONS.has(section) ? groups.filter(groupHasViewportField) : groups;
+  }
+
   function targetMatchesGroup(target, group) {
     if (!target?.isConnected) return false;
     return group.fields.some(({ element }) =>
@@ -2115,7 +2616,8 @@
     let changed = false;
     const controls = collectControls().filter((element) => isVisible(element) && !element.disabled);
     const previousControlCount = controls.filter((element) => !isPresenceGateControl(element)).length;
-    const gate = controls.find((element) => presenceGateMatchesSection(section, element));
+    const gate = controls.find((element) => presenceGateMatchesSection(section, element) &&
+      (!CURRENT_VIEW_ONLY_SECTIONS.has(section) || isInViewport(element)));
     if (gate && !aiHasExistingValue(gate)) {
       try {
         changed = await setControlValue(gate, "是", "") || changed;
@@ -2167,10 +2669,13 @@
   }
 
   function manualCandidateGroups(section) {
-    const detectedGroups = groupDescriptors(collectStructuredDescriptors(section)).filter((group) => {
-      const keys = new Set(group.fields.map(({ key }) => key));
-      return keys.size >= 2 && group.fields.some(({ element }) => isInViewport(element));
-    });
+    const detectedGroups = currentViewGroups(
+      section,
+      groupDescriptors(collectStructuredDescriptors(section)).filter((group) => {
+        const keys = new Set(group.fields.map(({ key }) => key));
+        return keys.size >= 2;
+      }),
+    );
     if (detectedGroups.length) return detectedGroups;
 
     const semanticDescriptors = collectControls()
@@ -2184,9 +2689,10 @@
       .filter(({ key, container }) => Boolean(key && container));
     const semanticGroups = groupDescriptors(semanticDescriptors).filter((group) =>
       new Set(group.fields.map(({ key }) => key)).size >= 2);
-    const viewportGroups = semanticGroups.filter((group) =>
-      group.fields.some(({ element }) => isInViewport(element)));
-    return viewportGroups.length ? viewportGroups : semanticGroups.length === 1 ? semanticGroups : [];
+    const viewportGroups = currentViewGroups(section, semanticGroups).filter(groupHasViewportField);
+    if (viewportGroups.length) return viewportGroups;
+    return CURRENT_VIEW_ONLY_SECTIONS.has(section) ? []
+      : semanticGroups.length === 1 ? semanticGroups : [];
   }
 
   async function fillSelectedRecord(recordType, record, overwriteExisting) {
@@ -2226,36 +2732,25 @@
     }
 
     const report = createReport();
-    const usedKeys = new Set();
-    let matched = 0;
-    for (const { element, key } of group.fields) {
-      if (usedKeys.has(key) || !element.isConnected) continue;
-      const value = valueForStructuredField(section, record, key);
-      if (value === "" || value === undefined || value === null || value === false) continue;
-      matched += 1;
-      usedKeys.add(key);
-      if (!isUsable(element, overwriteExisting, key)) {
-        report.skipped += 1;
-        continue;
-      }
-      try {
-        if (!await setControlValue(element, value, key)) {
-          report.failed += 1;
-          continue;
-        }
-        element.dataset.personalAutofill = "filled";
-        report.filled += 1;
-        report.sections[section] += 1;
-      } catch (_) {
-        report.failed += 1;
-      }
-    }
+    const groupElements = group.container
+      ? Array.from(group.container.querySelectorAll(CONTROL_SELECTOR))
+        .filter((element) => isVisible(element) && !element.disabled && !isProtectedField(element))
+      : group.fields.map(({ element }) => element);
+    const compoundHandled = await fillCompoundDateFields(
+      section, record, groupElements, overwriteExisting, report,
+    );
+    const known = await fillKnownStructuredFields(
+      section, record, groupElements, overwriteExisting, report, compoundHandled,
+    );
+    const matched = known.sourceKeys.size;
     if (report.filled) lastUserTarget = null;
     return { status: report.filled ? "filled" : matched ? "no_empty" : "no_match", ...report };
   }
 
   async function fillBasicFields(profile, customFields, overwriteExisting, state, report) {
-    for (const field of collectControls()) {
+    const controls = collectControls();
+    await fillCompoundBasicLocations(profile, controls, overwriteExisting, state, report);
+    for (const field of controls) {
       if (state.filledElements.has(field) || confirmedStructuredSection(field)) continue;
       const customValue = customFieldValue(field, customFields);
       const key = classifyBasicField(field);
@@ -2494,7 +2989,7 @@
       }
     }
     if (section === "project" && is51jobProjectPage()) {
-      const groups = fiftyOneJobProjectGroups();
+      const groups = currentViewGroups("project", fiftyOneJobProjectGroups());
       const focused = groups.filter((group) => targetMatchesGroup(lastUserTarget, group));
       const group = focused.length === 1 ? focused[0] : groups.length === 1 ? groups[0] : null;
       return group ? { status: "ready", special: "51job_project", elements: group.fields.map(({ element }) => element) }
@@ -2529,9 +3024,10 @@
       const keys = new Set(candidate.fields.map(({ key }) => key));
       return keys.size >= 2;
     });
-    const viewportSemanticGroups = semanticGroups.filter((candidate) =>
-      candidate.fields.some(({ element }) => isInViewport(element)));
-    const selectableSemanticGroups = viewportSemanticGroups.length ? viewportSemanticGroups : semanticGroups;
+    const viewportSemanticGroups = semanticGroups.filter(groupHasViewportField);
+    const selectableSemanticGroups = CURRENT_VIEW_ONLY_SECTIONS.has(section)
+      ? viewportSemanticGroups
+      : viewportSemanticGroups.length ? viewportSemanticGroups : semanticGroups;
     const focusedSemantic = selectableSemanticGroups.filter((candidate) => targetMatchesGroup(lastUserTarget, candidate));
     const semanticGroup = focusedSemantic.length === 1 ? focusedSemantic[0]
       : selectableSemanticGroups.length === 1 ? selectableSemanticGroups[0] : null;
@@ -2568,7 +3064,9 @@
       if (new Set(labels).size === labels.length) return { status: "ready", special: "", elements: selectedGroup };
     }
     if (eligibleGroups.length > 1 && !selectedGroup) return { status: "ambiguous" };
-    const scope = aiTargetScope(lastUserTarget);
+    const scope = CURRENT_VIEW_ONLY_SECTIONS.has(section) &&
+      (!lastUserTarget?.isConnected || !isInViewport(lastUserTarget))
+      ? null : aiTargetScope(lastUserTarget);
     if (!scope) return { status: "no_target" };
     const scopedElements = Array.from(scope.querySelectorAll(CONTROL_SELECTOR))
       .filter((element) => isVisible(element) && !isProtectedField(element) && detectStructuredSection(element) === section);
@@ -2593,8 +3091,13 @@
       const label = sanitizeAiText(textOfLabel(element) || element.getAttribute?.("aria-label") ||
         element.getAttribute?.("placeholder") || element.id || element.name);
       if (!label) continue;
-      const type = element instanceof HTMLSelectElement ? "select" : element instanceof HTMLTextAreaElement
+      const baseType = element instanceof HTMLSelectElement ? "select" : element instanceof HTMLTextAreaElement
         ? "textarea" : element.getAttribute?.("type") || element.getAttribute?.("role") || "text";
+      const capability = controlCapability(element);
+      const type = capability.datePart ? `${baseType}:date-${capability.datePart}`
+        : capability.locationLevel !== null
+          ? `${baseType}:location-${["province", "city", "district"][capability.locationLevel]}`
+          : capability.adjacentDateTrigger ? `${baseType}:date-trigger` : baseType;
       const options = element instanceof HTMLSelectElement
         ? Array.from(element.options).slice(0, 40).map((option) => sanitizeAiText(option.textContent, 100))
         : Array.from(element.querySelectorAll?.(":scope > ul > li") || []).slice(0, 40)
@@ -3015,9 +3518,40 @@
         return { status: "wrong_stage", ...report };
       }
     }
-    const described = aiDescribeElements(section, selected.elements);
-    if (!described.length) return { status: "no_target", ...report };
-    const sources = aiSources(section, payload);
+    // Site adapters and deterministic semantics run before the cloud request. AI is a
+    // fallback for unknown labels/regions, not a prerequisite for controls we already know.
+    if (selected.special) {
+      const legacy = await fillSelectedRecord(STRUCTURED_SECTIONS[section].recordsKey, payload.record, overwriteExisting);
+      return { ...legacy, aiChecked: false };
+    }
+    const identityKey = { education: "school", work: "company", project: "name", family: "relativeName" }[section];
+    if (identityKey && payload.record?.[identityKey]) {
+      const knownIdentity = selected.elements.find((element) => aiExpectedSource(section, element) === identityKey);
+      const existing = knownIdentity && readControlValue(knownIdentity);
+      if (existing && normalizeMatchText(existing) !== normalizeMatchText(payload.record[identityKey])) {
+        return { status: "record_conflict", ...report };
+      }
+    }
+    const compoundHandled = section === "basic" ? new Set() : await fillCompoundDateFields(
+      section, payload.record, selected.elements, overwriteExisting, report,
+    );
+    const known = section === "basic"
+      ? { handled: compoundHandled, sourceKeys: new Set() }
+      : await fillKnownStructuredFields(
+        section, payload.record, selected.elements, overwriteExisting, report, compoundHandled,
+      );
+    const remainingElements = selected.elements.filter((element) => !known.handled.has(element));
+    const described = aiDescribeElements(section, remainingElements);
+    const sources = aiSources(section, payload).filter(({ key }) => {
+      const value = aiSourceValue(section, payload, key);
+      return !known.sourceKeys.has(key) && value !== "" && value !== undefined && value !== null && value !== false;
+    });
+    if (!described.length || !sources.length) {
+      const status = report.filled ? "filled"
+        : report.unchanged || report.skipped ? "no_empty" : report.failed ? "no_match" : "no_target";
+      if (report.filled) lastUserTarget = null;
+      return { status, ...report };
+    }
     let aiResult;
     try {
       aiResult = await aiRequestMappings(section, described, sources);
@@ -3040,14 +3574,7 @@
       mappedFieldIds.add(target.id);
     }
 
-    // Existing adapters know how to operate complex site widgets; AI still inspects their field semantics.
-    if (selected.special) {
-      const legacy = await fillSelectedRecord(STRUCTURED_SECTIONS[section].recordsKey, payload.record, overwriteExisting);
-      return { ...legacy, aiChecked: true };
-    }
-
     const fieldMap = new Map(described.map((item) => [item.id, item]));
-    const identityKey = { education: "school", work: "company", project: "name", family: "relativeName" }[section];
     if (identityKey && payload.record?.[identityKey]) {
       const identityMapping = aiResult.mappings.find(({ sourceKey }) => sourceKey === identityKey);
       const identityElement = described.find(({ element }) =>

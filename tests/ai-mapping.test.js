@@ -16,6 +16,10 @@ const request = {
 };
 
 assert.equal(validateAiRequest(request), true);
+assert.equal(validateAiRequest({ ...request, fields: [
+  { ...request.fields[0], type: "select:date-year" },
+  { ...request.fields[1], type: "combobox:location-province" },
+] }), true);
 assert.equal(validateAiRequest({ ...request, fields: [{ ...request.fields[0], id: "arbitrary" }] }), false);
 assert.equal(validateAiRequest({ ...request, remembered: [{ fieldId: "f0", sourceKey: "not-allowed" }] }), false);
 assert.equal(validateAiMappings({ mappings: [{ fieldId: "f0", sourceKey: "role", confidence: 0.95 }] }, request).length, 1);

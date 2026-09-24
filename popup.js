@@ -165,7 +165,7 @@ async function sendManualFillRequest(button) {
       useAi,
     });
     const statusMessages = {
-      no_target: "未找到当前可填写的对应表单，请先在网页中打开或新增",
+      no_target: "当前屏幕未显示可填写的对应表单，请先打开或滚动到目标编辑器",
       ambiguous: "有多个同类表单，请先点击目标表单中的输入框",
       wrong_stage: "所选学历与网页表单阶段不符，未填写",
       record_conflict: "当前表单已有另一位亲属的姓名，请先新增或切换到正确表单",

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+  <head>
+    <meta charset="UTF-8" />
+    <title>复合字段拆分与精度适配回归测试</title>
+    <style>
+      body{max-width:900px;margin:20px auto;font:16px system-ui,sans-serif}
+      fieldset{margin:14px 0;padding:14px;border:1px solid #cbd5e1}
+      label{display:inline-block;margin:7px 10px 7px 0}input,select,textarea{padding:6px}
+      textarea{display:block;width:520px;height:80px}.time-row{display:flex;align-items:center;gap:8px}
+      .description{margin-top:10px}.description span{display:block}.counter{color:#64748b;font-size:13px}
+    </style>
+  </head>
+  <body>
+    <h1>复合字段拆分与精度适配回归测试</h1>
+    <section data-autofill-section="work">
+      <fieldset data-autofill-record id="workRecord">
+        <legend>实习经历</legend>
+        <label>公司名称<input id="company" /></label>
+        <div class="time-row">
+          <strong>起止时间</strong>
+          <label>年<select id="startYear"><option value="">年</option><option>2025</option><option>2026</option><option>2027</option></select></label>
+          <label>月<select id="startMonth"><option value="">月</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option value="m09">09月</option><option>10</option><option>11</option><option>12</option></select></label>
+          <span>—</span>
+          <label>年<select id="endYear"><option value="">年</option><option>2026</option><option>2027</option><option>2028</option></select></label>
+          <label>月<select id="endMonth"><option value="">月</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></label>
+        </div>
+        <label>职位名称<input id="position" /></label>
+        <div class="description">
+          <!-- Simulate a legacy page whose visible caption is not exposed in the control DOM. -->
+          <span class="counter">最多60个字</span>
+          <textarea id="responsibilities"></textarea>
+        </div>
+      </fieldset>
+    </section>
+    <section data-autofill-section="project">
+      <fieldset data-autofill-record id="projectRecord">
+        <legend>项目经历</legend>
+        <label>项目名称<input id="projectName" /></label>
+        <div class="time-row">
+          <strong>起止时间</strong>
+          <input type="date" id="projectStart" />
+          <span>—</span>
+          <input type="date" id="projectEnd" />
+        </div>
+        <label>项目描述<textarea id="projectDescription"></textarea></label>
+      </fieldset>
+    </section>
+    <form id="basicInfo">
+      <fieldset>
+        <legend>籍贯</legend>
+        <label>省<select id="nativeProvince"><option value="">省</option><option>山西省</option><option>湖北省</option></select></label>
+        <label>市<select id="nativeCity"><option value="">市</option><option>晋中市</option><option>武汉市</option></select></label>
+      </fieldset>
+      <fieldset>
+        <legend>出生地</legend>
+        <label>省<select id="birthProvince"><option value="">省</option><option>山西省</option><option>湖北省</option></select></label>
+      </fieldset>
+    </form>
+    <output id="result">运行中</output>
+    <script src="../content.js"></script>
+    <script>
+      async function run() {
+        const recordReport = await window.__personalAutofillDemoRecord("workExperiences", {
+          company: "深圳虾皮信息科技有限公司",
+          position: "后端开发",
+          startDate: "2026-09-21",
+          endDate: "2027-06-18",
+          responsibilities: "负责服务端开发与自动化建设",
+        });
+        const basicReport = await window.__personalAutofillDemoFill({
+          profile: {
+            nativePlace: "山西省 / 晋中市 / 平遥县",
+            birthPlace: "湖北省 / 武汉市 / 武昌区",
+          },
+          customFields: [], overwriteExisting: false,
+        });
+        const projectReport = await window.__personalAutofillDemoRecord("projects", {
+          name: "复合日期项目", startDate: "2025-09-08", endDate: "2026-06-09",
+          description: "验证公共起止时间标签下的两个完整日期框",
+        });
+        const values = Object.fromEntries([
+          "company", "startYear", "startMonth", "endYear", "endMonth", "position",
+          "responsibilities", "projectName", "projectStart", "projectEnd", "projectDescription",
+          "nativeProvince", "nativeCity", "birthProvince",
+        ].map((id) => [id, document.querySelector(`#${id}`).value]));
+        const passed = values.company === "深圳虾皮信息科技有限公司" && values.startYear === "2026" &&
+          values.startMonth === "m09" && values.endYear === "2027" && values.endMonth === "6" &&
+          values.position === "后端开发" && values.responsibilities === "负责服务端开发与自动化建设" &&
+          values.projectName === "复合日期项目" && values.projectStart === "2025-09-08" &&
+          values.projectEnd === "2026-06-09" && values.projectDescription === "验证公共起止时间标签下的两个完整日期框" &&
+          values.nativeProvince === "山西省" && values.nativeCity === "晋中市" &&
+          values.birthProvince === "湖北省";
+        document.querySelector("#result").textContent = JSON.stringify({
+          passed, values, recordReport, projectReport, basicReport,
+        });
+      }
+      window.addEventListener("load", run);
+    </script>
+  </body>
+</html>
