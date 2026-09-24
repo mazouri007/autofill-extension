@@ -229,6 +229,8 @@ button { cursor: pointer; }
 .form-grid .wide { grid-column: 1 / -1; }
 
 .form-grid input,
+.form-grid select,
+.form-grid textarea,
 .record-grid input,
 .record-grid textarea,
 .record-grid select,
@@ -240,6 +242,8 @@ button { cursor: pointer; }
 }
 
 .form-grid input,
+.form-grid select,
+.form-grid textarea,
 .record-grid input,
 .record-grid textarea,
 .record-grid select {
@@ -251,11 +255,14 @@ button { cursor: pointer; }
 }
 
 .form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus,
 .record-grid input:focus,
 .record-grid textarea:focus,
 .record-grid select:focus,
 .search-box:focus-within { border-color: #8da1ee; box-shadow: 0 0 0 3px rgba(52, 87, 213, 0.1); outline: 0; }
 input::placeholder { color: #a1a7b0; }
+.form-grid textarea { min-height: 86px; resize: vertical; }
 
 .record-list {
   display: grid;

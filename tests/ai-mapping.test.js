@@ -16,6 +16,7 @@ const request = {
 };
 
 assert.equal(validateAiRequest(request), true);
+assert.equal(validateAiRequest({ ...request, section: "award" }), true);
 assert.equal(validateAiRequest({ ...request, fields: [
   { ...request.fields[0], type: "select:date-year" },
   { ...request.fields[1], type: "combobox:location-province" },
@@ -42,6 +43,7 @@ const sectionRequest = {
   focusedGroupId: "g0",
 };
 assert.equal(validateAiSectionRequest(sectionRequest), true);
+assert.equal(validateAiSectionRequest({ ...sectionRequest, section: "award" }), true);
 assert.equal(validateAiSectionRequest({ ...sectionRequest, focusedGroupId: "g9" }), false);
 assert.equal(validateAiSectionRequest({ ...sectionRequest, groups: [{ ...sectionRequest.groups[0], id: "wrong" }] }), false);
 assert.deepEqual(validateAiSectionChoice({ groupId: "g0", confidence: 0.96 }, sectionRequest),

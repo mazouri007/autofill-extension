@@ -1,11 +1,15 @@
 const PROFILE_GROUPS = {
   basic: [
     "lastName", "firstName", "fullName", "nickname", "gender", "birthDate",
+    "ethnicity", "politicalStatus", "partyJoinDate", "maritalStatus",
     "height", "weight", "healthStatus", "strengths", "workYears",
     "email", "phone", "wechat", "website", "documentType", "documentNumber",
     "addressLine1", "addressLine2", "city", "province", "postalCode", "country",
     "householdRegistration", "nativePlace", "studentOrigin", "birthPlace", "currentResidence",
-    "emergencyContactName", "emergencyContactPhone",
+    "emergencyContactName", "emergencyContactPhone", "communicationAddress",
+    "willingToRelocate", "willingCountyWork", "relativesInGroup", "relativesRetiredRecently",
+    "hasScholarship", "studentLeader", "preferredWorkCity", "expectedAnnualSalary",
+    "hobbies", "advantagesWeaknesses", "selfEvaluation",
   ],
 };
 
@@ -53,6 +57,8 @@ const RECORD_TYPES = {
       { key: "degree", label: "学位", placeholder: "例如：工学学士" },
       { key: "degreeType", label: "学位类型", placeholder: "例如：普通学位" },
       { key: "major", label: "主修专业", placeholder: "例如：计算机科学与技术", required: true },
+      { key: "secondMajor", label: "第二专业", placeholder: "如有第二专业可填写" },
+      { key: "highestFullTime", label: "是否最高全日制学历", type: "select", options: ["", "是", "否"] },
       { key: "college", label: "学院 / 院系", placeholder: "例如：计算机科学技术学院" },
       { key: "location", label: "学校所在地", placeholder: "例如：上海市" },
       { key: "classRanking", label: "班级排名", placeholder: "例如：前 10%" },
@@ -90,6 +96,7 @@ const RECORD_TYPES = {
     summaryKeys: ["name", "role"],
     fields: [
       { key: "name", label: "项目名称", placeholder: "例如：招聘管理平台", required: true },
+      { key: "level", label: "项目级别", placeholder: "例如：国家级 / 校级" },
       { key: "role", label: "项目角色", placeholder: "例如：项目负责人" },
       { key: "company", label: "所属单位", placeholder: "公司、学校或组织" },
       { key: "technologies", label: "技术 / 工具", placeholder: "例如：Vue、Node.js" },
@@ -98,6 +105,18 @@ const RECORD_TYPES = {
       { key: "current", label: "仍在进行", type: "checkbox" },
       { key: "description", label: "项目描述", type: "textarea", placeholder: "项目背景、目标及主要工作", wide: true, maxLength: 3000 },
       { key: "achievements", label: "项目成果", type: "textarea", placeholder: "结果、数据指标或个人贡献", wide: true, maxLength: 3000 },
+    ],
+  },
+  awards: {
+    countId: "awardCount",
+    headingCountId: "awardHeadingCount",
+    title: "奖励信息",
+    summaryKeys: ["awardName", "awardLevel", "awardDate"],
+    fields: [
+      { key: "awardName", label: "奖励名称", placeholder: "例如：优秀毕业生", required: true },
+      { key: "awardLevel", label: "奖励级别", type: "select", options: ["", "国际级", "国家级", "省部级", "市级", "校级", "院系级", "其他"] },
+      { key: "awardDate", label: "奖励时间", type: "date" },
+      { key: "description", label: "说明", type: "textarea", placeholder: "奖励内容、颁发单位或其他说明（最多 200 字）", wide: true, maxLength: 200 },
     ],
   },
   familyMembers: {
@@ -152,10 +171,11 @@ function blankCustomField() {
 
 function blankResumeData() {
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     educations: [],
     workExperiences: [],
     projects: [],
+    awards: [],
     familyMembers: [],
   };
 }

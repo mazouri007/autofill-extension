@@ -33,6 +33,10 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6l2 2h8v12H4V5Z" /><path d="M8 12h8M8 15h5" /></svg>
             <span>项目经历</span><small id="projectCount">0</small>
           </button>
+          <button type="button" data-section="award">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5" /><path d="m9 12-2 9 5-3 5 3-2-9" /></svg>
+            <span>奖励信息</span><small id="awardCount">0</small>
+          </button>
           <button type="button" data-section="family">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="8" r="2.5" /><circle cx="16" cy="8" r="2.5" /><path d="M2.5 20c.3-3.4 2.2-5 5.5-5s5.2 1.6 5.5 5M11 15.7c1-.5 2.1-.7 3-.7 3.3 0 5.2 1.6 5.5 5" /></svg>
             <span>家庭成员</span><small id="familyCount">0</small>
@@ -75,6 +79,10 @@
                   <label><span>昵称</span><input data-profile-key="nickname" placeholder="小明" /></label>
                   <label><span>性别</span><input data-profile-key="gender" placeholder="男 / 女 / 其他" /></label>
                   <label><span>出生日期</span><input data-profile-key="birthDate" type="date" /></label>
+                  <label><span>民族</span><input data-profile-key="ethnicity" placeholder="例如：汉族" /></label>
+                  <label><span>党派 / 政治面貌</span><input data-profile-key="politicalStatus" placeholder="例如：中共党员 / 共青团员" /></label>
+                  <label><span>加入党派时间</span><input data-profile-key="partyJoinDate" type="date" /></label>
+                  <label><span>婚姻状况</span><input data-profile-key="maritalStatus" placeholder="例如：未婚 / 已婚" /></label>
                   <label><span>身高（cm）</span><input data-profile-key="height" type="number" min="50" max="250" inputmode="numeric" placeholder="例如：175" /></label>
                   <label><span>体重（kg）</span><input data-profile-key="weight" type="number" min="20" max="300" step="0.1" inputmode="decimal" placeholder="例如：65" /></label>
                   <label><span>健康状况</span><input data-profile-key="healthStatus" placeholder="例如：健康 / 良好" /></label>
@@ -92,6 +100,24 @@
                   <label><span>个人主页</span><input data-profile-key="website" type="url" placeholder="https://example.com" /></label>
                   <label><span>紧急联系人姓名</span><input data-profile-key="emergencyContactName" placeholder="请输入紧急联系人姓名" /></label>
                   <label><span>紧急联系人电话</span><input data-profile-key="emergencyContactPhone" type="tel" placeholder="请输入紧急联系人电话" /></label>
+                  <label class="wide"><span>通信地址</span><input data-profile-key="communicationAddress" placeholder="用于接收纸质材料的通信地址" /></label>
+                </div>
+              </section>
+
+              <section class="profile-group">
+                <h3>求职意向与补充</h3>
+                <div class="form-grid">
+                  <label><span>是否服从调剂</span><select data-profile-key="willingToRelocate"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+                  <label><span>是否愿意到县级公司工作</span><select data-profile-key="willingCountyWork"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+                  <label><span>是否有亲属在应聘集团工作</span><select data-profile-key="relativesInGroup"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+                  <label><span>近三年是否有亲属在应聘集团退休</span><select data-profile-key="relativesRetiredRecently"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+                  <label><span>是否获得过奖学金</span><select data-profile-key="hasScholarship"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+                  <label><span>是否为学生干部</span><select data-profile-key="studentLeader"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+                  <label><span>期望工作城市</span><input data-profile-key="preferredWorkCity" placeholder="例如：北京市" /></label>
+                  <label><span>期望待遇（万元 / 年）</span><input data-profile-key="expectedAnnualSalary" inputmode="decimal" placeholder="例如：15" /></label>
+                  <label class="wide"><span>爱好及特长</span><input data-profile-key="hobbies" placeholder="爱好、特长或擅长领域" /></label>
+                  <label class="wide"><span>优势与不足</span><textarea data-profile-key="advantagesWeaknesses" placeholder="客观描述个人优势与待改进之处"></textarea></label>
+                  <label class="wide"><span>自我评价及求职目标</span><textarea data-profile-key="selfEvaluation" placeholder="个人评价与求职目标"></textarea></label>
                 </div>
               </section>
 
@@ -159,6 +185,19 @@
             <div class="record-list" data-record-list="projects"></div>
             <div class="empty-state record-empty" data-record-empty="projects">
               <strong>还没有项目经历</strong><span>新增后可填写项目名称、角色、时间和成果</span>
+            </div>
+          </section>
+
+          <section class="content-section" data-panel="award" hidden>
+            <div class="section-heading">
+              <div><h2>奖励信息 <span id="awardHeadingCount">0</span></h2><p>保存多条获奖记录；先在招聘网页打开对应表单，再从插件中选择一条填写</p></div>
+              <button class="secondary-button" type="button" data-add-record="awards">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>新增奖励信息
+              </button>
+            </div>
+            <div class="record-list" data-record-list="awards"></div>
+            <div class="empty-state record-empty" data-record-empty="awards">
+              <strong>还没有奖励信息</strong><span>新增后可填写奖励时间、级别、名称及说明</span>
             </div>
           </section>
 

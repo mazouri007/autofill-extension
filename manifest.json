@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "个人信息自动填写助手",
-  "version": "3.4.6",
+  "version": "3.5.0",
   "description": "通用自适应表单引擎，支持复合日期与地区精度适配，并由 DeepSeek AI 辅助陌生页面识别。",
   "permissions": ["storage", "activeTab", "scripting"],
   "host_permissions": ["https://api.deepseek.com/*"],

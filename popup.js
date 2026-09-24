@@ -1,10 +1,14 @@
 const PROFILE_KEYS = [
   "lastName", "firstName", "fullName", "nickname", "gender", "birthDate",
+  "ethnicity", "politicalStatus", "partyJoinDate", "maritalStatus",
   "email", "phone", "wechat", "website", "documentType", "documentNumber",
   "addressLine1", "addressLine2", "city", "province", "postalCode", "country",
   "householdRegistration", "nativePlace", "studentOrigin", "birthPlace", "currentResidence",
   "height", "weight", "healthStatus", "strengths", "workYears",
-  "emergencyContactName", "emergencyContactPhone",
+  "emergencyContactName", "emergencyContactPhone", "communicationAddress",
+  "willingToRelocate", "willingCountyWork", "relativesInGroup", "relativesRetiredRecently",
+  "hasScholarship", "studentLeader", "preferredWorkCity", "expectedAnnualSalary",
+  "hobbies", "advantagesWeaknesses", "selfEvaluation",
 ];
 
 const fillButton = document.querySelector("#fillPage");
@@ -17,6 +21,7 @@ const RECORD_TYPES = [
   { key: "educations", label: "教育经历", summary: (item) => [item.school, item.educationLevel, item.major] },
   { key: "workExperiences", label: "工作 / 实习经历", summary: (item) => [item.company, item.position, item.workType] },
   { key: "projects", label: "项目经历", summary: (item) => [item.name, item.role] },
+  { key: "awards", label: "奖励信息", summary: (item) => [item.awardName, item.awardLevel, item.awardDate] },
   { key: "familyMembers", label: "家庭成员", summary: (item) => [item.relativeName, item.relationship] },
 ];
 
@@ -82,7 +87,7 @@ function renderRecordPicker(resumeData = {}) {
   if (!anyRecords) {
     const empty = document.createElement("p");
     empty.className = "record-picker-empty";
-    empty.textContent = "尚未保存经历或家庭成员，可在资料管理页新增。";
+    empty.textContent = "尚未保存经历、奖励或家庭成员，可在资料管理页新增。";
     recordPicker.append(empty);
   }
 }
@@ -168,7 +173,7 @@ async function sendManualFillRequest(button) {
       no_target: "当前屏幕未显示可填写的对应表单，请先打开或滚动到目标编辑器",
       ambiguous: "有多个同类表单，请先点击目标表单中的输入框",
       wrong_stage: "所选学历与网页表单阶段不符，未填写",
-      record_conflict: "当前表单已有另一位亲属的姓名，请先新增或切换到正确表单",
+      record_conflict: "当前表单已有另一条记录，请先新增或切换到正确表单",
       project_conflict: "当前表单已有另一个项目，请先点选空白项目表单",
       no_match: "找到表单，但没有匹配到可填写字段",
       no_empty: "字段已有内容或控件无法安全填写，请检查网页表单",

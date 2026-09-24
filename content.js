@@ -25,13 +25,29 @@
   };
 
   const FIELD_RULES = [
-    ["emergencyContactPhone", /(?:^|\b)(?:emergency[-_ ]?(?:contact[-_ ]?)?(?:phone|mobile|tel)|紧急联系人(?:手机|电话|联系方式)|紧急联系电话|应急联系人(?:手机|电话)|应急电话)(?:\b|$)/i],
-    ["emergencyContactName", /(?:^|\b)(?:emergency[-_ ]?contact[-_ ]?name|紧急联系人姓名|应急联系人姓名)(?:\b|$)/i],
+    ["emergencyContactPhone", /(?:^|\b)(?:emergency[-_ ]?(?:contact[-_ ]?)?(?:phone|mobile|tel)|紧急联系人(?:手机|电话|联系方式)|紧急联系方式|紧急联系电话|应急联系人(?:手机|电话)|应急电话)(?:\b|$)/i],
+    ["emergencyContactName", /(?:^|\b)(?:emergency[-_ ]?contact[-_ ]?name|紧急联系人(?:姓名)?|应急联系人姓名)(?:\b|$)/i],
+    ["ethnicity", /(?:^|\b)(?:ethnic(?:ity)?|民族)(?:\b|$)/i],
+    ["partyJoinDate", /(?:^|\b)(?:加入党派时间|入党时间|入团时间|party[-_ ]?join[-_ ]?date)(?:\b|$)/i],
+    ["politicalStatus", /(?:^|\b)(?:political[-_ ]?(?:status|affiliation)|政治面貌|党派)(?:\b|$)/i],
+    ["maritalStatus", /(?:^|\b)(?:marital[-_ ]?status|婚姻状况)(?:\b|$)/i],
+    ["communicationAddress", /(?:^|\b)(?:通信地址|通讯地址|邮寄地址|mailing[-_ ]?address)(?:\b|$)/i],
+    ["willingToRelocate", /是否服从调剂|服从调剂|willing[-_ ]?to[-_ ]?relocate/i],
+    ["willingCountyWork", /是否愿意.{0,5}县级公司工作|县级公司工作/i],
+    ["relativesRetiredRecently", /近三年是否有亲属.{0,25}退休|近三年.{0,20}亲属.{0,20}退休/i],
+    ["relativesInGroup", /是否有亲属.{0,25}(?:中国人寿|广发银行|本集团|应聘集团).{0,5}工作/i],
+    ["hasScholarship", /是否获得过奖学金|获得奖学金/i],
+    ["studentLeader", /是否为学生干部|学生干部/i],
+    ["preferredWorkCity", /期望工作城市|意向工作城市|期望工作地点/i],
+    ["expectedAnnualSalary", /期望待遇|期望年薪|预期年薪/i],
+    ["hobbies", /爱好及特长|兴趣爱好/i],
+    ["advantagesWeaknesses", /优势与不足|优点与不足/i],
+    ["selfEvaluation", /自我评价及求职目标|自我评价/i],
     ["email", /(?:^|\b)(?:e[-_ ]?mail|email address|电子邮箱|邮箱|邮件)(?:\b|$)/i],
     ["phone", /(?:^|\b)(?:mobile|cell(?:phone)?|phone|telephone|tel|手机(?:号码)?|联系电话|电话)(?:\b|$)/i],
     ["wechat", /(?:^|\b)(?:wechat|weixin|微信号|微信)(?:\b|$)/i],
     ["nickname", /(?:^|\b)(?:nickname|nick name|preferred name|alias|昵称)(?:\b|$)/i],
-    ["birthDate", /(?:^|\b)(?:birth[-_ ]?date|birthday|date of birth|dob|出生日期|生日)(?:\b|$)/i],
+    ["birthDate", /(?:^|\b)(?:birth[-_ ]?date|birthday|date of birth|dob|出生日期|出生年月|生日)(?:\b|$)/i],
     ["birthPlace", /(?:^|\b)(?:birth[-_ ]?place|place[-_ ]?of[-_ ]?birth|birthplace|出生地点|出生地)(?:\b|$)/i],
     ["gender", /(?:^|\b)(?:gender|sex|性别)(?:\b|$)/i],
     ["height", /(?:^|\b)(?:height|身高)(?:\b|$)/i],
@@ -59,15 +75,31 @@
   ];
 
   const COMPACT_CJK_RULES = [
-    ["emergencyContactPhone", /紧急联系人(?:手机|电话|联系方式)|紧急联系电话|应急联系人(?:手机|电话)|应急电话/],
-    ["emergencyContactName", /紧急联系人姓名|应急联系人姓名/],
+    ["emergencyContactPhone", /紧急联系人(?:手机|电话|联系方式)|紧急联系方式|紧急联系电话|应急联系人(?:手机|电话)|应急电话/],
+    ["emergencyContactName", /紧急联系人(?:姓名)?|应急联系人姓名/],
+    ["ethnicity", /民族/],
+    ["partyJoinDate", /加入党派时间|入党时间|入团时间/],
+    ["politicalStatus", /政治面貌|党派/],
+    ["maritalStatus", /婚姻状况/],
+    ["communicationAddress", /通信地址|通讯地址|邮寄地址/],
+    ["willingToRelocate", /是否服从调剂|服从调剂/],
+    ["willingCountyWork", /是否愿意.{0,5}县级公司工作|县级公司工作/],
+    ["relativesRetiredRecently", /近三年是否有亲属.{0,25}退休|近三年.{0,20}亲属.{0,20}退休/],
+    ["relativesInGroup", /是否有亲属.{0,25}(?:中国人寿|广发银行|本集团|应聘集团).{0,5}工作/],
+    ["hasScholarship", /是否获得过奖学金|获得奖学金/],
+    ["studentLeader", /是否为学生干部|学生干部/],
+    ["preferredWorkCity", /期望工作城市|意向工作城市|期望工作地点/],
+    ["expectedAnnualSalary", /期望待遇|期望年薪|预期年薪/],
+    ["hobbies", /爱好及特长|兴趣爱好/],
+    ["advantagesWeaknesses", /优势与不足|优点与不足/],
+    ["selfEvaluation", /自我评价及求职目标|自我评价/],
     ["documentNumber", /证件号码|证件号|身份证号码|身份证号|护照号码|护照号|document(?:number|no)|identification(?:number|no)|id(?:number|no)|passport(?:number|no)|cert(?:ificate)?(?:number|no)/i],
     ["documentType", /证件类型|证件类别|证件种类|documenttype|idtype|identitytype|cert(?:ificate)?type/i],
     ["email", /电子邮箱|邮箱|邮件/],
     ["phone", /手机号码|手机号|联系电话|电话/],
     ["wechat", /微信号|微信/],
     ["nickname", /昵称/],
-    ["birthDate", /出生日期|生日/],
+    ["birthDate", /出生日期|出生年月|生日/],
     ["birthPlace", /出生地点|出生地/],
     ["gender", /性别/],
     ["height", /身高/],
@@ -101,19 +133,21 @@
       strongPattern: /学校|院校|学历|学位|专业|入学|毕业|school|university|college|degree|major/i,
       addPattern: /新增|添加|add|new/i,
       fields: [
-        ["educationType", /学历类型|学历性质|培养方式|教育类型|education\s*type|schoolAgeType/i],
+        ["highestFullTime", /是否最高全日制学历|最高全日制学历/i],
+        ["educationType", /是否全日制|学历类型|学历性质|培养方式|教育类型|education\s*type|schoolAgeType/i],
         ["educationLevel", /最高学历|学历阶段|学历层次|学历|教育程度|education\s*level|qualification/i],
         ["degreeType", /学位类型|学位性质|degree\s*type/i],
         ["degree", /学位类型|学位|degree/i],
         ["college", /学院名称|学院|院系|系别|academy|institute|faculty/i],
         ["school", /学校名称|毕业院校|所在学校|院校名称|学校|school\s*name|university|college\s*name/i],
+        ["secondMajor", /第二专业|辅修专业|second\s*major|minor/i],
         ["major", /主修专业|所学专业|专业名称|专业|speciality|specialty|major/i],
         ["location", /学校所在地|学校地点|院校所在地|school\s*(?:place|location)|所在地/i],
         ["classRanking", /班级排名|专业排名|成绩排名|class\s*ranking|rank/i],
         ["startDate", /入学时间|入校时间|教育开始|开始(?:时间|日期)|起始(?:时间|日期)|entrance|start|begin|from/i],
         ["endDate", /毕业时间|教育结束|结束(?:时间|日期)|截止(?:时间|日期)|graduate|graduation|end|to/i],
         ["current", /目前在读|正在就读|在读|至今|current/i],
-        ["primary", /主要教育经历|是否主要|最高学历经历|primary/i],
+        ["primary", /是否主修|主要教育经历|是否主要|最高学历经历|primary/i],
         ["description", /在校经历|教育描述|补充说明|课程|学生干部|description|detail/i],
       ],
     },
@@ -128,7 +162,7 @@
         ["position", /工作岗位|岗位名称|职位名称|职位|职务|position|job\s*title|role/i],
         ["department", /所在部门|任职部门|部门|department|division|team/i],
         ["location", /工作地点|工作所在地|任职地点|work\s*(?:place|location)|location/i],
-        ["workType", /工作形式|工作类型|任职类型|用工类型|work\s*type|employment\s*type/i],
+        ["workType", /工作形式|工作类型|任职类型|用工类型|用工形式|work\s*type|employment\s*type/i],
         ["level", /岗位级别|职级|职位级别|duty\s*level|job\s*level/i],
         ["startDate", /入职时间|工作开始|开始(?:时间|日期)|起始(?:时间|日期)|start|begin|from/i],
         ["endDate", /离职时间|工作结束|结束(?:时间|日期)|截止(?:时间|日期)|end|to/i],
@@ -144,7 +178,8 @@
       addPattern: /新增|添加|add|new/i,
       fields: [
         ["name", /项目名称|课题名称|project\s*name|project\s*title/i],
-        ["role", /项目角色|担任角色|项目岗位|职责角色|project\s*role|role/i],
+        ["level", /项目级别|项目等级|project\s*level/i],
+        ["role", /项目角色|担任角色|担当角色|项目岗位|职责角色|project\s*role|role/i],
         ["company", /所属单位|项目单位|公司|organization|company/i],
         ["technologies", /技术栈|使用技术|技术工具|开发工具|technolog|tools?/i],
         ["startDate", /项目开始|开始(?:时间|日期)|起始(?:时间|日期)|start|begin|from/i],
@@ -152,6 +187,18 @@
         ["current", /仍在进行|进行中|至今|current|ongoing/i],
         ["description", /项目描述|项目内容|项目介绍|主要工作|项目职责|description|detail/i],
         ["achievements", /项目成果|项目业绩|项目成就|产出|achievement|result/i],
+      ],
+    },
+    award: {
+      recordsKey: "awards",
+      sectionPattern: /奖励信息|获奖经历|获奖情况|奖励情况|荣誉奖励|荣誉信息|表彰奖励|奖项信息|奖项经历|awards?|honou?rs?/i,
+      strongPattern: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|奖励时间|获奖时间|award\s*(?:name|title|level|date)/i,
+      addPattern: /新增|添加|add|new/i,
+      fields: [
+        ["awardDate", /奖励时间|获奖时间|获奖日期|授奖时间|颁奖时间|奖励日期|获奖年月|award\s*(?:date|time)|date\s*of\s*award/i],
+        ["awardLevel", /奖励级别|获奖级别|获奖等级|奖项级别|荣誉级别|奖励等级|award\s*level|prize\s*level/i],
+        ["awardName", /奖励名称|获奖名称|奖项名称|荣誉名称|奖项|奖项内容|award\s*(?:name|title)|prize\s*name/i],
+        ["description", /说明|备注|获奖内容|奖励描述|description|remarks?/i],
       ],
     },
     family: {
@@ -179,6 +226,7 @@
     education: /学校|院校|学历|学位|专业|school|university|degree|major/i,
     work: /工作单位|任职公司|雇主|工作岗位|岗位名称|公司名称|employer|company\s*name/i,
     project: /项目名称|课题名称|项目角色|project\s*(?:name|title|role)/i,
+    award: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|award\s*(?:name|title|level)/i,
     family: /亲属姓名|家属姓名|家庭成员姓名|与本人关系|亲属关系|家庭关系|relative\s*name|relationship/i,
   };
 
@@ -215,6 +263,7 @@
   const PAYMENT_HINTS = /credit|debit|payment|card[-_ ]?(?:number|no|num|holder|expiry|expiration)|cvv|cvc|iban|银行卡|信用卡|借记卡/i;
   const DOCUMENT_HINTS = /证件|身份证|护照|passport|national[-_ ]?id|identity[-_ ]?card|id[-_ ]?card|identification/i;
   const CUSTOM_ONLY_HINTS = /紧急联系人关系|应急联系人关系|emergencycontactrelationship/i;
+  const DECLARATION_HINTS = /本人承诺|填表人签名|是否曾有违规|违纪|违法|犯罪|涉黑|涉恶|外国国籍|境外永久居留|长期居留许可|境外地区引进人才/i;
   const GENERIC_CUSTOM_TERMS = new Set(["id", "no", "num", "number", "code", "type", "name", "value", "field", "input"]);
   const ALLOWED_INPUT_TYPES = new Set(["", "text", "email", "tel", "search", "url", "number", "date", "month", "checkbox", "radio"]);
   const CONTROL_SELECTOR = [
@@ -223,7 +272,7 @@
     // accessibility APIs while the visible DOM wrapper has no role attribute. Include the
     // stable framework roots so both deterministic matching and AI can see those controls.
     ".ant-select", ".ant-cascader-picker", ".el-select", ".el-cascader",
-    ".ivu-select", ".ivu-cascader",
+    ".ivu-select", ".ivu-cascader", ".phoenix-select",
   ].join(", ");
   const LOCATION_PROFILE_KEYS = new Set([
     "householdRegistration", "nativePlace", "studentOrigin", "birthPlace", "currentResidence",
@@ -237,18 +286,26 @@
   const AI_SOURCE_LABELS = {
     basic: {
       lastName: "姓", firstName: "名", fullName: "完整姓名", nickname: "昵称", gender: "性别",
-      birthDate: "出生日期", email: "电子邮箱", phone: "手机号码", wechat: "微信号",
+      birthDate: "出生日期", ethnicity: "民族", politicalStatus: "党派或政治面貌",
+      partyJoinDate: "加入党派时间", maritalStatus: "婚姻状况",
+      email: "电子邮箱", phone: "手机号码", wechat: "微信号",
       website: "个人主页", documentType: "证件类型", documentNumber: "证件号码",
       addressLine1: "详细地址", addressLine2: "地址补充", city: "城市", province: "省份",
       postalCode: "邮政编码", country: "国家或地区", height: "身高", weight: "体重",
       healthStatus: "健康状况", strengths: "特长", workYears: "工作年限",
       householdRegistration: "户籍", nativePlace: "籍贯", studentOrigin: "生源地", birthPlace: "出生地",
       currentResidence: "现居住地", emergencyContactName: "紧急联系人姓名",
-      emergencyContactPhone: "紧急联系人电话",
+      emergencyContactPhone: "紧急联系人电话", communicationAddress: "通信地址",
+      willingToRelocate: "是否服从调剂", willingCountyWork: "是否愿意到县级公司工作",
+      relativesInGroup: "是否有亲属在应聘集团工作", relativesRetiredRecently: "近三年是否有亲属在应聘集团退休",
+      hasScholarship: "是否获得过奖学金", studentLeader: "是否为学生干部",
+      preferredWorkCity: "期望工作城市", expectedAnnualSalary: "期望年薪",
+      hobbies: "爱好及特长", advantagesWeaknesses: "优势与不足", selfEvaluation: "自我评价及求职目标",
     },
     education: {
       school: "学校名称", educationLevel: "学历阶段", educationType: "学历类型", degree: "学位",
-      degreeType: "学位类型", major: "专业", college: "学院", location: "学校所在地",
+      degreeType: "学位类型", major: "专业", secondMajor: "第二专业",
+      highestFullTime: "是否最高全日制学历", college: "学院", location: "学校所在地",
       classRanking: "排名", startDate: "入学时间", endDate: "毕业时间", current: "目前在读",
       primary: "主要教育经历", description: "在校经历",
     },
@@ -258,9 +315,12 @@
       endDate: "结束时间", current: "目前在职", responsibilities: "工作内容与职责", achievements: "工作业绩",
     },
     project: {
-      name: "项目名称", role: "项目角色或职责", company: "所属单位", technologies: "技术或工具",
+      name: "项目名称", level: "项目级别", role: "项目角色或职责", company: "所属单位", technologies: "技术或工具",
       startDate: "项目开始时间", endDate: "项目结束时间", current: "仍在进行",
       description: "项目描述或工作描述", achievements: "项目成果",
+    },
+    award: {
+      awardDate: "奖励时间", awardLevel: "奖励级别", awardName: "奖励名称", description: "说明",
     },
     family: {
       relativeName: "亲属姓名", relationship: "与本人关系", birthDate: "亲属出生日期", gender: "亲属性别",
@@ -463,6 +523,7 @@
 
     const compactHints = compactText(hints);
     if (CUSTOM_ONLY_HINTS.test(compactHints)) return null;
+    if (DECLARATION_HINTS.test(compactHints)) return null;
     if (/电话所在区域|电话区域|国家区号|国际区号|手机区号/.test(compactHints)) return null;
     return COMPACT_CJK_RULES.find(([, pattern]) => pattern.test(compactHints))?.[0] ||
       FIELD_RULES.find(([, pattern]) => pattern.test(hints))?.[0] ||
@@ -592,7 +653,7 @@
 
   function isCustomControl(element) {
     return element.getAttribute?.("role") === "combobox" || Boolean(element.closest?.(
-      ".ant-select, .el-select, [class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
+      ".ant-select, .el-select, .phoenix-select, [class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
     ));
   }
 
@@ -619,7 +680,7 @@
   function isUsable(element, overwriteExisting, semanticKey = "") {
     if (element.disabled) return false;
     if (element.readOnly && !isCustomControl(element) && !isInteractiveDateControl(element) &&
-      !hasLocationControlHints(element) && !["birthDate", "startDate", "endDate"].includes(semanticKey)) return false;
+      !hasLocationControlHints(element) && !["birthDate", "startDate", "endDate", "awardDate"].includes(semanticKey)) return false;
     if (!overwriteExisting && readControlValue(element)) return false;
     return isVisible(element);
   }
@@ -755,13 +816,75 @@
     const selectors = [
       "[role='option']", ".ant-select-dropdown-menu-item", ".ant-cascader-menu-item",
       ".el-select-dropdown__item", ".el-cascader-node", "[class*='select-option']",
+      ".phoenix-selectList__listItem", ".list-item-container",
     ].join(", ");
     return Array.from(document.querySelectorAll(selectors)).filter((option) => {
       return isVisible(option) && !option.matches("[aria-disabled='true'], .disabled, [class*='disabled']");
     });
   }
 
+  function visiblePhoenixLayer(selector) {
+    const layers = Array.from(document.querySelectorAll(".common-unmodeled-layer"))
+      .filter((layer) => isVisible(layer) && layer.querySelector(selector));
+    return layers.length === 1 ? layers[0] : null;
+  }
+
+  function setInputValueWithoutBlur(element, value) {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    if (setter) setter.call(element, value);
+    else element.value = value;
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+    element.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function clickPhoenixOption(option) {
+    option.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    option.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    option.click();
+  }
+
+  async function setPhoenixSelectValue(element, value) {
+    const wrapper = element.closest?.(".phoenix-select") || element;
+    let layer = visiblePhoenixLayer(".phoenix-selectList, .constant-main-selector-container");
+    if (!layer) {
+      activateCustomControl(wrapper);
+      await wait(110);
+      layer = visiblePhoenixLayer(".phoenix-selectList, .constant-main-selector-container");
+    }
+    if (!layer) return false;
+    const modal = Boolean(layer.querySelector(".constant-main-selector-container"));
+    const selector = modal ? ".list-item-container" : ".phoenix-selectList__listItem";
+    const rankOptions = () => Array.from(layer.querySelectorAll(selector))
+      .filter(isVisible)
+      .map((option) => ({ option, score: optionScore(option.textContent, value) }))
+      .filter(({ score }) => score >= 70)
+      .sort((a, b) => b.score - a.score);
+    let ranked = rankOptions();
+    if (!ranked.length) {
+      const search = layer.querySelector("input[placeholder*='搜索']");
+      if (search) {
+        search.focus();
+        setInputValueWithoutBlur(search, value);
+        await wait(180);
+        ranked = rankOptions();
+      }
+    }
+    if (!ranked.length || (ranked[1]?.score === ranked[0].score &&
+      normalizeMatchText(ranked[1].option.textContent) !== normalizeMatchText(ranked[0].option.textContent))) return false;
+    clickPhoenixOption(ranked[0].option);
+    await wait(100);
+    if (modal) {
+      const confirm = Array.from(layer.querySelectorAll(".phoenix-button__content"))
+        .find((button) => button.textContent.trim() === "确定" && isVisible(button));
+      if (!confirm) return false;
+      clickPhoenixOption(confirm);
+      await wait(130);
+    }
+    return optionScore(readControlValue(element), value) >= 70;
+  }
+
   async function setCustomSelectValue(element, value) {
+    if (element.closest?.(".phoenix-select")) return setPhoenixSelectValue(element, value);
     const wrapper = element.closest?.(
       ".ant-select, .el-select, [class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
     ) || element;
@@ -1041,6 +1164,37 @@
     return locationDisplayMatches(element, wrapper, selected);
   }
 
+  async function setPhoenixAreaValue(element, value) {
+    const parts = splitLocationValue(value);
+    if (!parts.length) return false;
+    let layer = visiblePhoenixLayer(".area-selector-container");
+    if (!layer) {
+      activateCustomControl(element.closest?.(".phoenix-select") || element);
+      await wait(120);
+      layer = visiblePhoenixLayer(".area-selector-container");
+    }
+    if (!layer) return parts.length === 1 ? setPhoenixSelectValue(element, parts[0]) : false;
+    for (const part of parts) {
+      const ranked = Array.from(layer.querySelectorAll(".area-item-container"))
+        .filter(isVisible)
+        .map((option) => ({ option, score: locationOptionScore(option.textContent, part) }))
+        .filter(({ score }) => score >= 90)
+        .sort((a, b) => b.score - a.score);
+      if (!ranked.length || (ranked[1]?.score === ranked[0].score &&
+        normalizeMatchText(ranked[1].option.textContent) !== normalizeMatchText(ranked[0].option.textContent))) return false;
+      clickPhoenixOption(ranked[0].option);
+      await wait(120);
+    }
+    const confirm = Array.from(layer.querySelectorAll(".phoenix-button__content"))
+      .find((button) => button.textContent.trim() === "确定" && isVisible(button));
+    if (!confirm) return false;
+    clickPhoenixOption(confirm);
+    await wait(130);
+    const displayed = normalizeMatchText(readControlValue(element));
+    return parts.every((part) => displayed.includes(normalizeMatchText(part)) ||
+      displayed.includes(shortLocationPart(part)));
+  }
+
   function setLocationSelectValue(select, value) {
     const parts = splitLocationValue(value);
     if (!parts.length) return false;
@@ -1058,6 +1212,7 @@
     const parts = splitLocationValue(value);
     if (!parts.length) return false;
     if (element instanceof HTMLSelectElement) return setLocationSelectValue(element, value);
+    if (element.closest?.(".phoenix-select")) return setPhoenixAreaValue(element, value);
     if (cascaderWrapper(element)) return setCascaderLocationValue(element, value);
     const level = locationLevelForField(element);
     const projectedValue = level === null ? String(value) : parts[level];
@@ -1111,7 +1266,7 @@
 
   function formatDateValue(element, value, semanticKey = "") {
     const type = (element.getAttribute?.("type") || "").toLowerCase();
-    if (!["startDate", "endDate", "birthDate"].includes(semanticKey) && type !== "date" && type !== "month") return value;
+    if (!["startDate", "endDate", "birthDate", "partyJoinDate", "awardDate"].includes(semanticKey) && type !== "date" && type !== "month") return value;
     const match = String(value || "").match(/^(\d{4})-(\d{2})(?:-(\d{2}))?$/);
     if (!match) return value;
     const [, year, month, suppliedDay] = match;
@@ -1336,6 +1491,33 @@
     return datePartsMatch(element, year, month, day);
   }
 
+  async function setPhoenixDatePickerValue(element, value) {
+    const match = String(value).match(/^(\d{4})\D?(\d{2})(?:\D?(\d{2}))?\D*$/);
+    if (!match) return false;
+    const [, year, month, suppliedDay] = match;
+    const day = suppliedDay || "01";
+    const dateValue = `${year}-${month}-${day}`;
+    // The previous date picker may remain visible after Enter. Never reuse its
+    // portal when advancing from start date to end date: explicitly activate
+    // this field before locating the current calendar input.
+    const wrapper = element.closest?.(".phoenix-select") || element;
+    // Phoenix opens this picker from the select root. Its nested search input can
+    // receive focus without opening (or switching) the calendar at all.
+    wrapper.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    wrapper.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    wrapper.click?.();
+    await wait(130);
+    const layer = visiblePhoenixLayer(".phoenix-date-picker .phoenix-calendar-input");
+    const input = layer?.querySelector(".phoenix-calendar-input");
+    if (!input) return false;
+    input.focus();
+    setInputValueWithoutBlur(input, dateValue);
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", code: "Enter", bubbles: true }));
+    input.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", code: "Enter", bubbles: true }));
+    await wait(150);
+    return datePartsMatch(element, Number(year), Number(month), Number(day));
+  }
+
   async function setElementDatePickerValue(element, value) {
     const match = String(value).match(/^(\d{4})\D?(\d{2})(?:\D?(\d{2}))?\D*$/);
     if (!match) return false;
@@ -1512,6 +1694,11 @@
 
   async function setControlValue(element, value, semanticKey = "") {
     if (value === undefined || value === null || value === "") return false;
+    if (semanticKey === "educationType" && /是否全日制/.test(fieldHints(element))) {
+      value = /非全日制|在职|成人|part[- ]?time/i.test(String(value)) ? "否" : "是";
+    }
+    if (["primary", "current"].includes(semanticKey) && typeof value === "boolean" &&
+      isCustomControl(element)) value = value ? "是" : "否";
     if (LOCATION_PROFILE_KEYS.has(semanticKey)) {
       return setLocationControlValue(element, value);
     }
@@ -1526,13 +1713,17 @@
       formatted = String(value).match(/-?\d+(?:\.\d+)?/)?.[0] || "";
       if (!formatted) return false;
     }
+    if (["birthDate", "startDate", "endDate", "partyJoinDate", "awardDate"].includes(semanticKey) &&
+      element.closest?.(".phoenix-select")) {
+      return setPhoenixDatePickerValue(element, formatted);
+    }
     if (element.closest?.(".ant-calendar-picker, .ant-picker")) {
       return setAntDatePickerValue(element, formatted);
     }
     if (elementDateWrapper(element)) {
       return setElementDatePickerValue(element, formatted);
     }
-    if (["birthDate", "startDate", "endDate"].includes(semanticKey) &&
+    if (["birthDate", "startDate", "endDate", "partyJoinDate", "awardDate"].includes(semanticKey) &&
       (element.readOnly || isInteractiveDateControl(element) || /日期|时间|date|month|calendar/i.test(dateFormatHints(element)))) {
       return setGenericDatePickerValue(element, formatted);
     }
@@ -1586,6 +1777,7 @@
 
   function dateSourceFromText(value, section) {
     const text = compactText(value);
+    if (section === "award") return "awardDate";
     if (section === "family" && /出生|生日|birth/.test(text)) return "birthDate";
     if (/入学|入校|入职|开始|起始|起聘|from|start|begin|entrance/i.test(text)) return "startDate";
     if (/毕业|离职|结束|截止|终止|退休|to|end|graduate/i.test(text)) return "endDate";
@@ -1670,7 +1862,7 @@
     const type = String(control.getAttribute?.("type") || "").toLowerCase();
     if (["date", "month"].includes(type) || isInteractiveDateControl(element)) return true;
     const hints = dateFormatHints(element);
-    if (/yyyy|yy[-/.年]m|datefmt|datepicker|calendar|日期|出生年月|开始时间|结束时间|入职时间|离职时间/i.test(hints)) {
+    if (/yyyy|yy[-/.年]m|datefmt|datepicker|calendar|日期|出生年月|开始时间|结束时间|入职时间|离职时间|奖励时间|获奖时间/i.test(hints)) {
       return true;
     }
     return Boolean((control.readOnly || element.readOnly) && adjacentDateActivationTargets(element).length);
@@ -1692,13 +1884,13 @@
 
     const context = compoundContextText(candidates.map(({ element }) => element));
     const contextSource = dateSourceFromText(context, section);
-    const supportsRange = section !== "family" && (record?.startDate || record?.endDate);
-    let activeSource = section === "family" ? "birthDate" : contextSource || "startDate";
+    const supportsRange = !["family", "award"].includes(section) && (record?.startDate || record?.endDate);
+    let activeSource = section === "family" ? "birthDate" : section === "award" ? "awardDate" : contextSource || "startDate";
     const seenParts = new Set();
 
     for (const candidate of candidates) {
       const explicit = classifyStructuredField(candidate.element, section);
-      let sourceKey = ["startDate", "endDate", "birthDate"].includes(explicit) ? explicit : null;
+      let sourceKey = ["startDate", "endDate", "birthDate", "awardDate"].includes(explicit) ? explicit : null;
       if (!sourceKey) sourceKey = dateSourceFromText(fieldHints(candidate.element), section);
       if (!sourceKey) {
         if (supportsRange && seenParts.has(candidate.component)) {
@@ -1774,6 +1966,7 @@
       education: ["description"],
       work: ["responsibilities", "achievements"],
       project: ["description", "achievements"],
+      award: ["description"],
     };
     const unclassifiedTextareas = (elements || []).filter((element) =>
       (element instanceof HTMLTextAreaElement || element.isContentEditable) &&
@@ -1940,7 +2133,7 @@
       for (const element of root.querySelectorAll(CONTROL_SELECTOR)) {
         if (seen.has(element) || isProtectedField(element)) continue;
         if (element.getAttribute?.("role") === "combobox" || element.matches?.(
-          ".ant-select, .ant-cascader-picker, .el-select, .el-cascader, .ivu-select, .ivu-cascader")) {
+          ".ant-select, .ant-cascader-picker, .el-select, .el-cascader, .ivu-select, .ivu-cascader, .phoenix-select")) {
           // Ant Design and similar libraries often keep a zero-sized search input inside
           // the visible combobox. Skipping the wrapper in that case drops the control
           // completely because the hidden descendant is not usable. Deduplicate only when
@@ -1975,6 +2168,20 @@
   function boundedStructuredContainer(element, section) {
     const inferencePattern = STRUCTURED_INFERENCE_PATTERNS[section];
     if (!inferencePattern) return null;
+    // Phoenix renders one repeatable resume record as a ux-standard-form, but splits
+    // its date controls and identity fields into separate form-part-body columns.
+    // Grouping by the first semantically rich column drops the dates from a manually
+    // selected record. The standard-form boundary is the record, not its columns.
+    const phoenixRecord = element.closest?.(".ux-standard-form");
+    if (phoenixRecord) {
+      const controls = Array.from(phoenixRecord.querySelectorAll(CONTROL_SELECTOR))
+        .filter((control) => isVisible(control) && !control.disabled && !isProtectedField(control) &&
+          !isPresenceGateControl(control));
+      if (controls.length >= 2 && controls.length <= 40 &&
+        new Set(controls.map((control) => classifyStructuredField(control, section)).filter(Boolean)).size >= 2) {
+        return phoenixRecord;
+      }
+    }
     let ancestor = element.parentElement;
     for (let depth = 0; ancestor && ancestor !== document.body && depth < 12;
       depth += 1, ancestor = ancestor.parentElement) {
@@ -2025,7 +2232,7 @@
       }
       const currentGroup = groupByContainer.get(descriptor.container);
       const duplicate = currentGroup?.fields.some((field) => field.key === descriptor.key);
-      const compoundDateDuplicate = duplicate && ["startDate", "endDate", "birthDate"].includes(descriptor.key) &&
+      const compoundDateDuplicate = duplicate && ["startDate", "endDate", "birthDate", "awardDate"].includes(descriptor.key) &&
         Boolean(datePartForControl(descriptor.element)) && currentGroup.fields
           .filter((field) => field.key === descriptor.key)
           .every((field) => Boolean(datePartForControl(field.element)));
@@ -2040,7 +2247,7 @@
     let current = null;
     for (const descriptor of loose) {
       const duplicate = current?.fields.some((field) => field.key === descriptor.key);
-      const compoundDateDuplicate = duplicate && ["startDate", "endDate", "birthDate"].includes(descriptor.key) &&
+      const compoundDateDuplicate = duplicate && ["startDate", "endDate", "birthDate", "awardDate"].includes(descriptor.key) &&
         Boolean(datePartForControl(descriptor.element)) && current.fields
           .filter((field) => field.key === descriptor.key)
           .every((field) => Boolean(datePartForControl(field.element)));
@@ -2094,7 +2301,7 @@
 
   function createReport() {
     return { filled: 0, skipped: 0, unchanged: 0, failed: 0,
-      sections: { basic: 0, education: 0, work: 0, project: 0, family: 0 } };
+      sections: { basic: 0, education: 0, work: 0, project: 0, award: 0, family: 0 } };
   }
 
   function chinaMobileFamilyEditor() {
@@ -2565,7 +2772,7 @@
     return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
   }
 
-  const CURRENT_VIEW_ONLY_SECTIONS = new Set(["education", "work", "project"]);
+  const CURRENT_VIEW_ONLY_SECTIONS = new Set(["education", "work", "project", "award"]);
 
   function groupHasViewportField(group) {
     return group.fields.some(({ element }) => isInViewport(element));
@@ -2593,6 +2800,7 @@
       education: /教育|学历|education|academic/i,
       work: /实习|工作|任职|work|intern|employment/i,
       project: /项目|科研|研究|project|research/i,
+      award: /奖励|获奖|荣誉|奖项|award|honou?r/i,
       family: /家庭|亲属|家属|family|relative/i,
     };
     return isPresenceGateControl(element) && Boolean(patterns[section]?.test(hints));
@@ -3217,7 +3425,7 @@
     }
     if (observed.some((existing) => existing && candidates.some((candidate) =>
       compactText(existing) === compactText(candidate)))) return true;
-    if (["birthDate", "startDate", "endDate"].includes(sourceKey)) {
+    if (["birthDate", "startDate", "endDate", "awardDate"].includes(sourceKey)) {
       const actualParts = actual.match(/\d+/g) || [];
       const wantedParts = wanted.match(/\d+/g) || [];
       if (actualParts.length >= 2 && wantedParts.length >= 2 && actualParts.length <= 3) {
@@ -3237,7 +3445,7 @@
     const element = target.element;
     if (element instanceof HTMLInputElement && element.readOnly && !isCustomControl(element) &&
       !isInteractiveDateControl(element) && !LOCATION_PROFILE_KEYS.has(mapping.sourceKey) &&
-      !["birthDate", "startDate", "endDate"].includes(mapping.sourceKey)) return false;
+      !["birthDate", "startDate", "endDate", "awardDate"].includes(mapping.sourceKey)) return false;
     if (element instanceof HTMLInputElement && ["checkbox", "radio"].includes(element.type) &&
       typeof value !== "boolean" && ![element.value, textOfLabel(element)]
         .some((candidate) => aliasesFor(value).some((alias) =>
@@ -3524,7 +3732,7 @@
       const legacy = await fillSelectedRecord(STRUCTURED_SECTIONS[section].recordsKey, payload.record, overwriteExisting);
       return { ...legacy, aiChecked: false };
     }
-    const identityKey = { education: "school", work: "company", project: "name", family: "relativeName" }[section];
+    const identityKey = { education: "school", work: "company", project: "name", award: "awardName", family: "relativeName" }[section];
     if (identityKey && payload.record?.[identityKey]) {
       const knownIdentity = selected.elements.find((element) => aiExpectedSource(section, element) === identityKey);
       const existing = knownIdentity && readControlValue(knownIdentity);
