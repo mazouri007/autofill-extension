@@ -129,12 +129,13 @@
   const STRUCTURED_SECTIONS = {
     education: {
       recordsKey: "educations",
-      sectionPattern: /教育经历|学历信息|学历经历|教育背景|学习经历|education|academic/i,
+      sectionPattern: /教育经历|教育信息|学历信息|学历经历|教育背景|学习经历|education|academic/i,
       strongPattern: /学校|院校|学历|学位|专业|入学|毕业|school|university|college|degree|major/i,
       addPattern: /新增|添加|add|new/i,
       fields: [
         ["highestFullTime", /是否最高全日制学历|最高全日制学历/i],
-        ["educationType", /是否全日制|学历类型|学历性质|培养方式|教育类型|education\s*type|schoolAgeType/i],
+        ["overseasEducation", /是否(?:海外|境外)(?:教育|学习|留学)经历|海外学历|海外教育经历|境外教育经历|留学经历|overseas\s*education|study\s*abroad/i],
+        ["educationType", /是否全日制|学习形式|学习方式|就读方式|学历类型|学历性质|培养方式|教育类型|education\s*type|schoolAgeType/i],
         ["educationLevel", /最高学历|学历阶段|学历层次|学历|教育程度|education\s*level|qualification/i],
         ["degreeType", /学位类型|学位性质|degree\s*type/i],
         ["degree", /学位类型|学位|degree/i],
@@ -144,6 +145,10 @@
         ["major", /主修专业|所学专业|专业名称|专业|speciality|specialty|major/i],
         ["location", /学校所在地|学校地点|院校所在地|school\s*(?:place|location)|所在地/i],
         ["classRanking", /班级排名|专业排名|成绩排名|class\s*ranking|rank/i],
+        ["studyDuration", /学制|修业年限|学习年限|duration\s*of\s*study|years?\s*of\s*schooling/i],
+        ["gpa", /平均学分绩点|绩点|grade\s*point\s*average|\bgpa\b/i],
+        ["advisor", /导师|指导教师|指导老师|supervisor|advisor|mentor/i],
+        ["laboratory", /实验室|研究室|laborator|\blab\b/i],
         ["startDate", /入学时间|入校时间|教育开始|开始(?:时间|日期)|起始(?:时间|日期)|entrance|start|begin|from/i],
         ["endDate", /毕业时间|教育结束|结束(?:时间|日期)|截止(?:时间|日期)|graduate|graduation|end|to/i],
         ["current", /目前在读|正在就读|在读|至今|current/i],
@@ -189,6 +194,18 @@
         ["achievements", /项目成果|项目业绩|项目成就|产出|achievement|result/i],
       ],
     },
+    practice: {
+      recordsKey: "extracurricularPractices",
+      sectionPattern: /校外实践|社会实践(?:经历)?|课外实践|(?<!项目)实践经历|实践活动|校外活动|extracurricular\s*practice|social\s*practice|off[- ]campus\s*practice/i,
+      strongPattern: /实践单位|实践部门|实践内容|单位或部门|主要内容|practice\s*(?:organization|department|content)/i,
+      addPattern: /新增|添加|add|new/i,
+      fields: [
+        ["organization", /实践单位|实践部门|单位或部门|单位\/部门|单位名称|部门名称|所在单位|所在部门|组织名称|organization|department|institution/i],
+        ["mainContent", /实践内容|主要内容|活动内容|工作内容|实践描述|活动描述|主要工作|职责描述|main\s*content|practice\s*description/i],
+        ["startDate", /实践开始|开始(?:时间|日期)|起始(?:时间|日期)|start|begin|from/i],
+        ["endDate", /实践结束|结束(?:时间|日期)|截止(?:时间|日期)|end|to/i],
+      ],
+    },
     award: {
       recordsKey: "awards",
       sectionPattern: /奖励信息|获奖经历|获奖情况|奖励情况|荣誉奖励|荣誉信息|表彰奖励|奖项信息|奖项经历|awards?|honou?rs?/i,
@@ -226,6 +243,7 @@
     education: /学校|院校|学历|学位|专业|school|university|degree|major/i,
     work: /工作单位|任职公司|雇主|工作岗位|岗位名称|公司名称|employer|company\s*name/i,
     project: /项目名称|课题名称|项目角色|project\s*(?:name|title|role)/i,
+    practice: /校外实践|社会实践|实践单位|实践部门|实践内容|单位或部门|主要内容|practice\s*(?:organization|department|content)/i,
     award: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|award\s*(?:name|title|level)/i,
     family: /亲属姓名|家属姓名|家庭成员姓名|与本人关系|亲属关系|家庭关系|relative\s*name|relationship/i,
   };
@@ -307,7 +325,8 @@
       degreeType: "学位类型", major: "专业", secondMajor: "第二专业",
       highestFullTime: "是否最高全日制学历", college: "学院", location: "学校所在地",
       classRanking: "排名", startDate: "入学时间", endDate: "毕业时间", current: "目前在读",
-      primary: "主要教育经历", description: "在校经历",
+      studyDuration: "学制", gpa: "绩点", overseasEducation: "是否海外教育经历",
+      advisor: "导师", laboratory: "实验室", primary: "主要教育经历", description: "在校经历",
     },
     work: {
       company: "工作单位", companyType: "单位性质", position: "岗位或职位", department: "部门",
@@ -318,6 +337,10 @@
       name: "项目名称", level: "项目级别", role: "项目角色或职责", company: "所属单位", technologies: "技术或工具",
       startDate: "项目开始时间", endDate: "项目结束时间", current: "仍在进行",
       description: "项目描述或工作描述", achievements: "项目成果",
+    },
+    practice: {
+      startDate: "实践开始日期", endDate: "实践结束日期", organization: "实践单位或部门",
+      mainContent: "实践主要内容",
     },
     award: {
       awardDate: "奖励时间", awardLevel: "奖励级别", awardName: "奖励名称", description: "说明",
@@ -599,6 +622,29 @@
   // "教育经历". Treat a control as structured only when the section is also confirmed by a
   // nearby, reasonably-sized editor. This keeps those later headings from hiding every basic
   // field from both the deterministic and AI-assisted fill paths.
+  function isPersonalInformationGroup(controls, section) {
+    const basicKeys = new Set(controls.map(classifyBasicField).filter(Boolean));
+    const identityKeys = ["fullName", "documentNumber", "phone", "email", "birthDate"];
+    if (basicKeys.size < 3 || !identityKeys.some((key) => basicKeys.has(key))) return false;
+    // A real education/work editor has several record-specific fields. A personal form
+    // can still contain "最高学历" and "高考所在地"; those two alone do not make it a record.
+    const recordKeys = new Set(controls.map((control) => classifyStructuredField(control, section)).filter(Boolean));
+    return recordKeys.size <= 3 || basicKeys.size > recordKeys.size + 2;
+  }
+
+  function isInsidePersonalInformationGroup(element, section) {
+    for (let ancestor = element.parentElement, depth = 0;
+      ancestor && ancestor !== document.body && depth < 12;
+      ancestor = ancestor.parentElement, depth += 1) {
+      const controls = Array.from(ancestor.querySelectorAll(CONTROL_SELECTOR))
+        // Disabled identity fields still establish that this is the personal
+        // information form, even though they must never be written to.
+        .filter((control) => isVisible(control) && !isProtectedField(control));
+      if (controls.length >= 4 && controls.length <= 40 && isPersonalInformationGroup(controls, section)) return true;
+    }
+    return false;
+  }
+
   function confirmedStructuredSection(element) {
     let section = detectStructuredSection(element);
     // Some SPAs render section titles as plain text nodes rather than headings. In that
@@ -610,31 +656,13 @@
         Boolean(boundedStructuredContainer(element, candidate))) || null;
       if (!section) return null;
     }
-
     const explicit = element.closest?.("[data-autofill-section]")?.getAttribute("data-autofill-section");
     if (explicit === section) return section;
     if (boundedStructuredContainer(element, section)) return section;
-
-    let ancestor = element.parentElement;
-    for (let depth = 0; ancestor && ancestor !== document.body && depth < 8;
-      depth += 1, ancestor = ancestor.parentElement) {
-      const controls = ancestor.querySelectorAll?.(CONTROL_SELECTOR).length || 0;
-      if (controls < 2 || controls > 40) continue;
-      if (sectionFromText(structuralText(ancestor)) === section) return section;
-
-      let branch = element;
-      while (branch?.parentElement && branch.parentElement !== ancestor) branch = branch.parentElement;
-      const children = Array.from(ancestor.children || []);
-      const branchIndex = children.indexOf(branch);
-      if (branchIndex < 0) continue;
-      const precedingHeading = children.slice(0, branchIndex).reverse().find((child) =>
-        child.matches?.(
-          "h1, h2, h3, h4, h5, legend, [role='heading'], [class*='section-title'], [class*='section-header']"));
-      if (precedingHeading && sectionFromText(
-        `${structuralText(precedingHeading)} ${precedingHeading.innerText || precedingHeading.textContent || ""}`) === section) {
-        return section;
-      }
-    }
+    if (isInsidePersonalInformationGroup(element, section)) return null;
+    // A heading higher up the page is not proof that this control belongs to
+    // that repeatable record. Resume editors often put the basic form and later
+    // education/work headings under the same ancestor.
     return null;
   }
 
@@ -653,7 +681,8 @@
 
   function isCustomControl(element) {
     return element.getAttribute?.("role") === "combobox" || Boolean(element.closest?.(
-      ".ant-select, .el-select, .phoenix-select, [class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
+      ".ant-select, .el-select, .phoenix-select, [class*='sd-Dropdown-container'], " +
+      "[class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
     ));
   }
 
@@ -690,7 +719,26 @@
       return element.checked ? String(element.value || "true") : "";
     }
     if (element.isContentEditable) return String(element.innerText || "").trim();
+    const phoenixSelect = element.closest?.(".phoenix-select");
+    if (phoenixSelect && phoenixSelect !== element && element.matches?.("input")) {
+      // Phoenix keeps an empty internal input beneath the visible committed
+      // value. Reading that input alone makes a real selection look empty.
+      const displayed = String(phoenixSelect.textContent || "").replace(/\s+/g, " ").trim();
+      return /^请选择/.test(displayed) ? "" : displayed;
+    }
+    const mokaSelect = element.closest?.("[class*='sd-Dropdown-container']");
+    if (mokaSelect && element.matches?.("input, [class*='sd-Select-container']")) {
+      // Moka's input is a transient search query. Only the display span is the
+      // committed React select value; reading "09" here used to report a false fill.
+      return String(mokaSelect.querySelector("[class*='sd-Input-display-value']")?.textContent || "").trim();
+    }
     if ("value" in element) return String(element.value || "").trim();
+    if (element.matches?.(".ant-select")) {
+      // Open Ant menus can be mounted inside the wrapper; their option text is
+      // not the field's current value and must not block a retry.
+      return String(element.querySelector(".ant-select-selection-item, .ant-select-selection-selected-value")
+        ?.textContent || "").trim();
+    }
     const nestedValue = element.querySelector?.("input:not([type='hidden']), textarea, select")?.value;
     if (nestedValue) return String(nestedValue).trim();
     const selectedText = element.querySelector?.([
@@ -800,6 +848,7 @@
     return element.querySelector?.([
       ".ant-cascader-picker-label", ".ant-select-selection", ".ant-select-selector",
       ".el-input", ".el-input__wrapper", ".ivu-select-selection", ".ivu-cascader-rel",
+      "[class*='sd-Select-container']",
       "input:not([type='hidden'])",
     ].join(", ")) || element;
   }
@@ -814,19 +863,96 @@
 
   function visibleOptions() {
     const selectors = [
-      "[role='option']", ".ant-select-dropdown-menu-item", ".ant-cascader-menu-item",
+      "[role='option']", ".ant-select-item-option", ".ant-select-dropdown-menu-item", ".ant-cascader-menu-item",
       ".el-select-dropdown__item", ".el-cascader-node", "[class*='select-option']",
-      ".phoenix-selectList__listItem", ".list-item-container",
+      ".phoenix-selectList__listItem", ".list-item-container", "[class*='sd-Menu-content-item']",
     ].join(", ");
     return Array.from(document.querySelectorAll(selectors)).filter((option) => {
-      return isVisible(option) && !option.matches("[aria-disabled='true'], .disabled, [class*='disabled']");
+      const rect = option.getBoundingClientRect?.();
+      // Ant renders 0×0 role=option nodes solely for screen readers. They have
+      // client rects but cannot be clicked; use the visual option instead.
+      return isVisible(option) && rect?.width >= 2 && rect?.height >= 2 &&
+        !option.matches("[aria-disabled='true'], .disabled, [class*='disabled']");
     });
   }
 
-  function visiblePhoenixLayer(selector) {
+  function visibleOptionsFor(wrapper) {
+    const options = visibleOptions();
+    const mokaPanel = wrapper.closest?.("[class*='sd-Dropdown-container']");
+    if (mokaPanel) return options.filter((option) => mokaPanel.contains(option));
+    const panels = Array.from(document.querySelectorAll([
+      ".ant-select-dropdown", ".el-select-dropdown", ".ivu-select-dropdown",
+      "[role='listbox']", "[class*='select-dropdown']", "[class*='selectDropdown']",
+    ].join(", "))).filter((panel) => isVisible(panel) && options.some((option) => panel.contains(option)));
+    if (!panels.length) return options;
+
+    const controlsId = wrapper.querySelector?.("[aria-controls]")?.getAttribute("aria-controls") ||
+      wrapper.getAttribute?.("aria-controls");
+    const controlled = controlsId && document.getElementById(controlsId);
+    if (controlled && isVisible(controlled)) {
+      const scoped = options.filter((option) => controlled.contains(option));
+      if (scoped.length) return scoped;
+    }
+    if (panels.length === 1) return options.filter((option) => panels[0].contains(option));
+
+    const anchor = wrapper.getBoundingClientRect?.();
+    if (!anchor) return [];
+    const ranked = panels.map((panel) => {
+      const rect = panel.getBoundingClientRect?.();
+      const dx = Math.max(0, rect.left - anchor.right, anchor.left - rect.right);
+      const dy = Math.max(0, rect.top - anchor.bottom, anchor.top - rect.bottom);
+      return { panel, distance: dx * dx + dy * dy };
+    }).sort((a, b) => a.distance - b.distance);
+    // Two indistinguishable open menus are unsafe: do not pick an option from
+    // another field merely because its label happens to match.
+    if (ranked[1] && ranked[0].distance + 256 >= ranked[1].distance) return [];
+    return options.filter((option) => ranked[0].panel.contains(option));
+  }
+
+  function selectedCustomValue(wrapper, element) {
+    const selected = wrapper.querySelector?.([
+      ".ant-select-selection-selected-value", ".ant-select-selection-item",
+      ".el-select__selected-item", ".ivu-select-selected-value",
+      ".ant-cascader-picker-label", ".ivu-cascader-label", "[class*='sd-Input-display-value']",
+    ].join(", "));
+    if (selected) return String(selected.textContent || "").trim();
+    // Ant's editable input contains the search query, not the selected value.
+    if (wrapper.matches?.(".ant-select")) return "";
+    return readControlValue(element);
+  }
+
+  function visiblePhoenixLayer(selector, owner = null) {
     const layers = Array.from(document.querySelectorAll(".common-unmodeled-layer"))
-      .filter((layer) => isVisible(layer) && layer.querySelector(selector));
-    return layers.length === 1 ? layers[0] : null;
+      .filter((layer) => isVisible(layer) && isVisible(layer.querySelector(selector)));
+    if (layers.length <= 1) return layers[0] || null;
+
+    // Date popups are anchored beside their own input. When the old start
+    // popup and the new end popup are both visible, use the clicked field's
+    // position instead of rejecting both or taking DOM order.
+    if (owner?.getBoundingClientRect) {
+      const anchor = owner.getBoundingClientRect();
+      const distances = layers.map((layer) => {
+        const panel = layer.querySelector(".phoenix-date-picker, .phoenix-selectList, .constant-main-selector-container, .area-selector-container") || layer;
+        const rect = panel.getBoundingClientRect?.();
+        if (!rect || !rect.width || !rect.height) return { layer, distance: Infinity };
+        const dx = rect.left - anchor.left;
+        const dy = rect.top - anchor.bottom;
+        return { layer, distance: dx * dx + dy * dy };
+      }).sort((a, b) => a.distance - b.distance);
+      if (Number.isFinite(distances[0].distance) &&
+        distances[0].distance + 256 < distances[1].distance) return distances[0].layer;
+    }
+
+    // Overlapping portals may have identical geometry. Only the top one can
+    // receive a real click at its calendar input; retain ambiguity otherwise.
+    const topmost = layers.filter((layer) => {
+      const input = layer.querySelector(selector);
+      const rect = input?.getBoundingClientRect?.();
+      if (!rect || !rect.width || !rect.height) return false;
+      const hit = document.elementFromPoint?.(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return Boolean(hit && layer.contains(hit));
+    });
+    return topmost.length === 1 ? topmost[0] : null;
   }
 
   function setInputValueWithoutBlur(element, value) {
@@ -845,12 +971,11 @@
 
   async function setPhoenixSelectValue(element, value) {
     const wrapper = element.closest?.(".phoenix-select") || element;
-    let layer = visiblePhoenixLayer(".phoenix-selectList, .constant-main-selector-container");
-    if (!layer) {
-      activateCustomControl(wrapper);
-      await wait(110);
-      layer = visiblePhoenixLayer(".phoenix-selectList, .constant-main-selector-container");
-    }
+    // A portal from the previous field may still be open. Activate this field
+    // first and bind the portal to its position before selecting an option.
+    activateCustomControl(wrapper);
+    await wait(110);
+    const layer = visiblePhoenixLayer(".phoenix-selectList, .constant-main-selector-container", wrapper);
     if (!layer) return false;
     const modal = Boolean(layer.querySelector(".constant-main-selector-container"));
     const selector = modal ? ".list-item-container" : ".phoenix-selectList__listItem";
@@ -886,31 +1011,63 @@
   async function setCustomSelectValue(element, value) {
     if (element.closest?.(".phoenix-select")) return setPhoenixSelectValue(element, value);
     const wrapper = element.closest?.(
-      ".ant-select, .el-select, [class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
+      ".ant-select, .el-select, [class*='sd-Dropdown-container'], " +
+      "[class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
     ) || element;
     activateCustomControl(wrapper);
     await wait(80);
 
     const searchInput = wrapper.querySelector?.("input:not([type='hidden'])") ||
       (element instanceof HTMLInputElement ? element : null);
-    if (searchInput && !searchInput.readOnly) {
+    const searchableAntSelect = !wrapper.matches?.(".ant-select") ||
+      wrapper.classList.contains("ant-select-show-search");
+    const mokaSelect = wrapper.matches?.("[class*='sd-Dropdown-container']");
+    const visibleMokaMatch = mokaSelect && visibleOptionsFor(wrapper).some((option) =>
+      optionScore(option.innerText || option.textContent, value) >= 70);
+    if (searchInput && !searchInput.readOnly && searchableAntSelect && !visibleMokaMatch) {
       searchInput.focus();
-      setNativeValue(searchInput, value);
+      // Blur closes Ant's popup before its option can be clicked. A hidden
+      // search input in a non-searchable select must not be edited at all.
+      setInputValueWithoutBlur(searchInput, value);
       const searchDelay = /学校|院校|school|university|college/i.test(fieldHints(searchInput)) ? 680 : 260;
       await wait(searchDelay);
     }
 
-    const option = visibleOptions()
+    let candidates = visibleOptionsFor(wrapper);
+    const rankOptions = () => candidates
       .map((item) => ({ item, score: optionScore(item.innerText || item.textContent, value) }))
-      .sort((a, b) => b.score - a.score)[0];
+      .sort((a, b) => b.score - a.score);
+    let option = rankOptions()[0];
+    if (!option?.score && wrapper.matches?.(".ant-select")) {
+      const panel = candidates[0]?.closest?.(".ant-select-dropdown");
+      const scroller = panel?.querySelector?.(".rc-virtual-list-holder");
+      if (scroller && scroller.scrollHeight > scroller.clientHeight) {
+        const originalScrollTop = scroller.scrollTop;
+        const step = Math.max(32, Math.round(scroller.clientHeight * 0.8));
+        for (let position = 0, attempts = 0;
+          position < scroller.scrollHeight && attempts < 40 && !option?.score;
+          position += step, attempts += 1) {
+          scroller.scrollTop = position;
+          scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
+          await wait(45);
+          candidates = visibleOptionsFor(wrapper);
+          option = rankOptions()[0];
+        }
+        if (!option?.score) {
+          scroller.scrollTop = originalScrollTop;
+          scroller.dispatchEvent(new Event("scroll", { bubbles: true }));
+        }
+      }
+    }
     if (!option?.score) {
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
       return false;
     }
     option.item.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     option.item.click();
-    await wait(60);
-    return true;
+    await wait(150);
+    const accepted = optionScore(selectedCustomValue(wrapper, element), value) >= 70;
+    return accepted;
   }
 
   function splitLocationValue(value) {
@@ -1167,12 +1324,10 @@
   async function setPhoenixAreaValue(element, value) {
     const parts = splitLocationValue(value);
     if (!parts.length) return false;
-    let layer = visiblePhoenixLayer(".area-selector-container");
-    if (!layer) {
-      activateCustomControl(element.closest?.(".phoenix-select") || element);
-      await wait(120);
-      layer = visiblePhoenixLayer(".area-selector-container");
-    }
+    const wrapper = element.closest?.(".phoenix-select") || element;
+    activateCustomControl(wrapper);
+    await wait(120);
+    const layer = visiblePhoenixLayer(".area-selector-container", wrapper);
     if (!layer) return parts.length === 1 ? setPhoenixSelectValue(element, parts[0]) : false;
     for (const part of parts) {
       const ranked = Array.from(layer.querySelectorAll(".area-item-container"))
@@ -1292,31 +1447,55 @@
   function visibleAntCalendarFor(element) {
     const selector = ".ant-calendar-picker-container, .ant-picker-dropdown";
     const wrapper = element.closest?.(".ant-calendar-picker, .ant-picker") || element;
+    const openCalendars = (root) => Array.from(root.querySelectorAll(selector)).filter((calendar) =>
+      isVisible(calendar) && calendar.getAttribute?.("aria-hidden") !== "true" &&
+      !/ant-(?:calendar-picker-container|picker-dropdown)-hidden/.test(String(calendar.className)));
     // Ant Design can leave the previous picker visible during its closing animation.
     // Some sites render each popup beside its own input instead of under document.body.
     for (let ancestor = wrapper.parentElement, depth = 0;
       ancestor && ancestor !== document.body && depth < 5;
       ancestor = ancestor.parentElement, depth += 1) {
-      const calendars = Array.from(ancestor.querySelectorAll(selector)).filter(isVisible);
+      const calendars = openCalendars(ancestor);
       if (calendars.length === 1) return calendars[0];
     }
-    const calendars = Array.from(document.querySelectorAll(selector)).filter(isVisible);
-    // If two body-level popups are still visible, choosing either by DOM order risks
-    // writing an end date into the start field. Leave the field for manual review.
-    return calendars.length === 1 ? calendars[0] : null;
+    const calendars = openCalendars(document);
+    if (calendars.length <= 1) return calendars[0] || null;
+    // Ant portals may leave the start picker on screen while opening the end
+    // picker. Associate the calendar with its input by position, never DOM order.
+    const anchor = wrapper.getBoundingClientRect?.();
+    if (!anchor) return null;
+    const ranked = calendars.map((calendar) => {
+      const rect = calendar.getBoundingClientRect?.();
+      if (!rect?.width || !rect?.height) return { calendar, distance: Infinity };
+      const dx = Math.max(0, rect.left - anchor.right, anchor.left - rect.right);
+      const dy = Math.max(0, rect.top - anchor.bottom, anchor.top - rect.bottom);
+      return { calendar, distance: dx * dx + dy * dy };
+    }).sort((a, b) => a.distance - b.distance);
+    return ranked[0].distance + 256 < ranked[1].distance ? ranked[0].calendar : null;
   }
 
-  function visibleElementCalendar() {
-    return Array.from(document.querySelectorAll([
+  function visibleElementCalendar(element = null) {
+    const selector = [
       ".el-picker-panel.el-date-picker",
       ".el-picker-panel.el-date-range-picker",
       ".el-picker__popper .el-picker-panel",
       ".el-picker-panel",
-    ].join(", "))).find((calendar) => {
+    ].join(", ");
+    const calendars = Array.from(document.querySelectorAll(selector)).filter((calendar) => {
       return isVisible(calendar) && Boolean(calendar.querySelector(
         ".el-date-table, .el-month-table, .el-year-table, .el-date-picker__header",
       ));
     });
+    if (calendars.length <= 1) return calendars[0] || null;
+    const anchor = element?.getBoundingClientRect?.();
+    if (!anchor) return null;
+    const ranked = calendars.map((calendar) => {
+      const rect = calendar.getBoundingClientRect();
+      const dx = Math.max(0, rect.left - anchor.right, anchor.left - rect.right);
+      const dy = Math.max(0, rect.top - anchor.bottom, anchor.top - rect.bottom);
+      return { calendar, distance: dx * dx + dy * dy };
+    }).sort((a, b) => a.distance - b.distance);
+    return ranked[0].distance + 256 < ranked[1].distance ? ranked[0].calendar : null;
   }
 
   function datePartsMatch(element, year, month, day = null) {
@@ -1362,6 +1541,9 @@
   }
 
   async function directDateInputFallback(element, dateValue, year, month, day) {
+    // A controlled picker can show a synthetically assigned input value while
+    // its internal form value remains empty. Never count that as a committed date.
+    if (element.readOnly || isInteractiveDateControl(element)) return false;
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     await wait(30);
     setNativeValue(element, dateValue);
@@ -1394,8 +1576,12 @@
     return documents;
   }
 
-  function visibleGenericDateCalendar() {
+  function visibleGenericDateCalendar(owner = null) {
+    const elementPanels = Array.from(document.querySelectorAll(".el-picker-panel"))
+      .filter((panel) => isVisible(panel));
+    if (elementPanels.length) return visibleElementCalendar(owner);
     const selectors = [
+      ".layui-laydate",
       ".ivu-date-picker-transfer", ".ivu-select-dropdown", ".mx-datepicker-popup",
       ".react-datepicker-popper", ".van-calendar__popup", "[class*='date-picker-panel']",
       "[class*='datePickerPanel']", "[class*='datepicker-panel']", "[class*='calendar-panel']",
@@ -1468,8 +1654,6 @@
     const year = Number(match[1]);
     const month = Number(match[2]);
     const day = match[3] ? Number(match[3]) : null;
-    if (await directDateInputFallback(element, value, year, month, day)) return true;
-
     let calendar = null;
     for (const target of [element, ...adjacentDateActivationTargets(element)]) {
       target.focus?.();
@@ -1477,10 +1661,14 @@
       target.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
       target.click?.();
       await wait(140);
-      calendar = visibleGenericDateCalendar();
+      calendar = visibleGenericDateCalendar(element);
       if (calendar) break;
     }
-    if (!calendar || day === null) return false;
+    if (!calendar) return directDateInputFallback(element, value, year, month, day);
+    if (calendar.matches?.(".el-picker-panel")) {
+      return setElementDatePickerValue(element, value, calendar);
+    }
+    if (day === null) return false;
     const cell = genericDateCell(calendar, year, month, day);
     if (!cell) return false;
     const target = cell.querySelector?.("button, a, span, div") || cell;
@@ -1507,7 +1695,7 @@
     wrapper.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
     wrapper.click?.();
     await wait(130);
-    const layer = visiblePhoenixLayer(".phoenix-date-picker .phoenix-calendar-input");
+    const layer = visiblePhoenixLayer(".phoenix-date-picker .phoenix-calendar-input", wrapper);
     const input = layer?.querySelector(".phoenix-calendar-input");
     if (!input) return false;
     input.focus();
@@ -1518,26 +1706,35 @@
     return datePartsMatch(element, Number(year), Number(month), Number(day));
   }
 
-  async function setElementDatePickerValue(element, value) {
+  async function setElementDatePickerValue(element, value, openCalendar = null) {
     const match = String(value).match(/^(\d{4})\D?(\d{2})(?:\D?(\d{2}))?\D*$/);
     if (!match) return false;
     const targetYear = Number(match[1]);
     const targetMonth = Number(match[2]);
     const targetDay = match[3] ? Number(match[3]) : null;
     const wrapper = elementDateWrapper(element) || element;
+    const acceptedAfterBlur = async () => {
+      // Some controlled pickers briefly display a value before their form model
+      // rejects it. Verify after the same blur a user would cause on leaving it.
+      element.blur?.();
+      await wait(120);
+      return datePartsMatch(element, targetYear, targetMonth, targetDay);
+    };
 
-    element.focus?.();
-    element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-    element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-    element.click?.();
-    await wait(120);
-    let calendar = visibleElementCalendar();
+    if (!openCalendar) {
+      element.focus?.();
+      element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+      element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+      element.click?.();
+      await wait(120);
+    }
+    let calendar = openCalendar || visibleElementCalendar(element);
     if (!calendar && wrapper !== element) {
       wrapper.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
       wrapper.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
       wrapper.click?.();
       await wait(120);
-      calendar = visibleElementCalendar();
+      calendar = visibleElementCalendar(element);
     }
     const dateValue = `${String(targetYear).padStart(4, "0")}-${String(targetMonth).padStart(2, "0")}` +
       (targetDay === null ? "" : `-${String(targetDay).padStart(2, "0")}`);
@@ -1548,7 +1745,7 @@
     if (exactCell) {
       clickElementDateCell(exactCell);
       await wait(150);
-      if (datePartsMatch(element, targetYear, targetMonth, targetDay)) return true;
+      if (await acceptedAfterBlur()) return true;
       return directDateInputFallback(element, dateValue, targetYear, targetMonth, targetDay);
     }
 
@@ -1561,19 +1758,18 @@
       element, dateValue, targetYear, targetMonth, targetDay,
     );
     if (yearDifference) {
-      const yearButton = elementDateNavigationButton(
-        calendar, yearDifference < 0 ? "previous" : "next", "year",
-      );
-      if (!yearButton) return directDateInputFallback(
-        element, dateValue, targetYear, targetMonth, targetDay,
-      );
       for (let count = 0; count < Math.abs(yearDifference); count += 1) {
+        const yearButton = elementDateNavigationButton(
+          calendar, yearDifference < 0 ? "previous" : "next", "year",
+        );
+        if (!yearButton) return false;
         yearButton.click();
-        await wait(90);
+        await wait(100);
+        calendar = visibleElementCalendar(element) || calendar;
       }
     }
 
-    calendar = visibleElementCalendar() || calendar;
+    calendar = visibleElementCalendar(element) || calendar;
     if (targetDay !== null) {
       displayed = displayedElementDate(calendar);
       if (!displayed.month) return directDateInputFallback(
@@ -1581,15 +1777,14 @@
       );
       const monthDifference = targetMonth - displayed.month;
       if (monthDifference) {
-        const monthButton = elementDateNavigationButton(
-          calendar, monthDifference < 0 ? "previous" : "next", "month",
-        );
-        if (!monthButton) return directDateInputFallback(
-          element, dateValue, targetYear, targetMonth, targetDay,
-        );
         for (let count = 0; count < Math.abs(monthDifference); count += 1) {
+          const monthButton = elementDateNavigationButton(
+            calendar, monthDifference < 0 ? "previous" : "next", "month",
+          );
+          if (!monthButton) return false;
           monthButton.click();
-          await wait(90);
+          await wait(100);
+          calendar = visibleElementCalendar(element) || calendar;
         }
       }
 
@@ -1614,7 +1809,7 @@
       );
     }
     await wait(150);
-    if (datePartsMatch(element, targetYear, targetMonth, targetDay)) return true;
+    if (await acceptedAfterBlur()) return true;
     return directDateInputFallback(element, dateValue, targetYear, targetMonth, targetDay);
   }
 
@@ -1635,15 +1830,16 @@
     const displayedYear = Number((yearSelect?.innerText || yearSelect?.textContent || "").match(/\d{4}/)?.[0]);
     if (displayedYear) {
       const yearDifference = targetYear - displayedYear;
-      const yearButton = yearDifference < 0
-        ? calendar.querySelector(".ant-calendar-prev-year-btn, .ant-picker-header-super-prev-btn")
-        : calendar.querySelector(".ant-calendar-next-year-btn, .ant-picker-header-super-next-btn");
-      if (!yearButton && yearDifference) return false;
-      for (let count = 0; count < Math.min(Math.abs(yearDifference), 20); count += 1) {
-        yearButton.click();
-        await wait(16);
-      }
       if (Math.abs(yearDifference) > 20) return false;
+      for (let count = 0; count < Math.abs(yearDifference); count += 1) {
+        const yearButton = yearDifference < 0
+          ? calendar.querySelector(".ant-calendar-prev-year-btn, .ant-picker-header-super-prev-btn")
+          : calendar.querySelector(".ant-calendar-next-year-btn, .ant-picker-header-super-next-btn");
+        if (!yearButton) return false;
+        yearButton.click();
+        await wait(75);
+        calendar = visibleAntCalendarFor(element) || calendar;
+      }
       calendar = visibleAntCalendarFor(element) || calendar;
     }
 
@@ -1667,13 +1863,14 @@
     const displayedMonth = Number(displayedMonthText.match(/\d{1,2}/)?.[0]);
     if (displayedMonth) {
       const monthDifference = targetMonth - displayedMonth;
-      const monthButton = monthDifference < 0
-        ? calendar.querySelector(".ant-calendar-prev-month-btn, .ant-picker-header-prev-btn")
-        : calendar.querySelector(".ant-calendar-next-month-btn, .ant-picker-header-next-btn");
-      if (!monthButton && monthDifference) return false;
       for (let count = 0; count < Math.abs(monthDifference); count += 1) {
+        const monthButton = monthDifference < 0
+          ? calendar.querySelector(".ant-calendar-prev-month-btn, .ant-picker-header-prev-btn")
+          : calendar.querySelector(".ant-calendar-next-month-btn, .ant-picker-header-next-btn");
+        if (!monthButton) return false;
         monthButton.click();
-        await wait(16);
+        await wait(75);
+        calendar = visibleAntCalendarFor(element) || calendar;
       }
       calendar = visibleAntCalendarFor(element) || calendar;
     }
@@ -1688,8 +1885,8 @@
     if (!dateButton) return false;
     dateButton.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     dateButton.click();
-    await wait(80);
-    return readControlValue(element).startsWith(dateValue);
+    await wait(150);
+    return datePartsMatch(element, targetYear, targetMonth, targetDay);
   }
 
   async function setControlValue(element, value, semanticKey = "") {
@@ -1703,13 +1900,18 @@
       return setLocationControlValue(element, value);
     }
     if (element instanceof HTMLInputElement && (element.type === "checkbox" || element.type === "radio")) {
-      setChecked(element, Boolean(value));
+      if (semanticKey === "overseasEducation" && element.type === "checkbox") {
+        if (!["是", "否"].includes(String(value))) return false;
+        setChecked(element, value === "是");
+      } else {
+        setChecked(element, Boolean(value));
+      }
       return true;
     }
     if (element instanceof HTMLSelectElement) return setSelectValue(element, value);
     let formatted = formatDateValue(element, String(value), semanticKey);
     if (element instanceof HTMLInputElement && element.type === "number" &&
-      ["height", "weight", "workYears"].includes(semanticKey)) {
+      ["height", "weight", "workYears", "studyDuration", "gpa"].includes(semanticKey)) {
       formatted = String(value).match(/-?\d+(?:\.\d+)?/)?.[0] || "";
       if (!formatted) return false;
     }
@@ -1837,7 +2039,9 @@
     }
     const plain = String(part);
     const padded = plain.padStart(2, "0");
-    const values = component === "year" ? [plain] : [...new Set([padded, plain])];
+    // Split month/day text boxes usually expect 9 rather than 09. Try the
+    // unpadded value first, then retain 09 as a fallback for strict controls.
+    const values = component === "year" ? [plain] : [...new Set([plain, padded])];
     for (const value of values) {
       setNativeValue(element, value);
       await wait(50);
@@ -1881,6 +2085,13 @@
     const handled = new Set();
     handled.sourceKeys = new Set();
     if (!candidates.length) return handled;
+    const filledTargets = [];
+    // Selecting a year can make a framework choose January automatically. That
+    // month was blank when the user initiated filling, so it is not an existing
+    // user value and must not block the intended month (for example 07 or 09).
+    const initialValues = new Map(candidates.map(({ element, component }) => [
+      element, component === "whole" ? readControlValue(element) : numericControlValue(element),
+    ]));
 
     const context = compoundContextText(candidates.map(({ element }) => element));
     const contextSource = dateSourceFromText(context, section);
@@ -1903,7 +2114,7 @@
         if (sourceKey === "endDate" && seenParts.size) seenParts.clear();
       }
       seenParts.add(candidate.component);
-      if (!record?.[sourceKey] || (sourceKey === "endDate" && record.current)) {
+      if (!record?.[sourceKey]) {
         handled.add(candidate.element);
         continue;
       }
@@ -1914,7 +2125,7 @@
           report.unchanged += 1;
           continue;
         }
-        if (!isUsable(candidate.element, overwriteExisting, sourceKey)) {
+        if (!isUsable(candidate.element, overwriteExisting || !initialValues.get(candidate.element), sourceKey)) {
           report.skipped += 1;
           continue;
         }
@@ -1924,6 +2135,7 @@
             continue;
           }
           candidate.element.dataset.personalAutofill = "filled";
+          filledTargets.push({ ...candidate, sourceKey, wanted: record[sourceKey] });
           report.filled += 1;
           report.sections[section] += 1;
         } catch (_) {
@@ -1939,7 +2151,7 @@
         report.unchanged += 1;
         continue;
       }
-      if (existing && !overwriteExisting) {
+      if (Number.isFinite(initialValues.get(candidate.element)) && !overwriteExisting) {
         report.skipped += 1;
         continue;
       }
@@ -1949,11 +2161,33 @@
           continue;
         }
         candidate.element.dataset.personalAutofill = "filled";
+        filledTargets.push({ ...candidate, sourceKey, wanted });
         report.filled += 1;
         report.sections[section] += 1;
       } catch (_) {
         report.failed += 1;
       }
+    }
+    // A later React update may reset an earlier date part. A successful click
+    // is not enough: check the committed values again after the full range.
+    if (filledTargets.length) await wait(80);
+    for (const target of filledTargets) {
+      const matches = () => target.component === "whole"
+        ? aiValuesEquivalent(target.element, target.wanted, target.sourceKey)
+        : numericControlValue(target.element) === target.wanted;
+      if (matches()) continue;
+      let restored = false;
+      try {
+        restored = target.component === "whole"
+          ? await setControlValue(target.element, target.wanted, target.sourceKey)
+          : await setDatePartControl(target.element, target.component, target.wanted);
+        if (restored) await wait(80);
+      } catch (_) { /* Report the mismatch below. */ }
+      if (restored && matches()) continue;
+      delete target.element.dataset.personalAutofill;
+      report.filled -= 1;
+      report.sections[section] -= 1;
+      report.failed += 1;
     }
     return handled;
   }
@@ -1966,6 +2200,7 @@
       education: ["description"],
       work: ["responsibilities", "achievements"],
       project: ["description", "achievements"],
+      practice: ["mainContent"],
       award: ["description"],
     };
     const unclassifiedTextareas = (elements || []).filter((element) =>
@@ -1987,7 +2222,8 @@
       const value = valueForStructuredField(section, record, key);
       if (value === "" || value === undefined || value === null || value === false) continue;
       if (element instanceof HTMLInputElement && ["checkbox", "radio"].includes(element.type) &&
-        typeof value !== "boolean") continue;
+        typeof value !== "boolean" && !(key === "overseasEducation" && element.type === "checkbox" &&
+          ["是", "否"].includes(value))) continue;
       usedKeys.add(key);
       sourceKeys.add(key);
       handled.add(element);
@@ -2132,6 +2368,17 @@
     for (const root of collectRoots()) {
       for (const element of root.querySelectorAll(CONTROL_SELECTOR)) {
         if (seen.has(element) || isProtectedField(element)) continue;
+        const customRoot = element.closest?.(
+          ".ant-select, .ant-cascader-picker, .el-select, .el-cascader, .ivu-select, .ivu-cascader, .phoenix-select",
+        );
+        const usableNested = (nested) => {
+          const rect = nested?.getBoundingClientRect?.();
+          return nested && !(nested instanceof HTMLInputElement && nested.readOnly) &&
+            isVisible(nested) && nested.getAttribute?.("aria-hidden") !== "true" &&
+            rect?.width >= 8 && rect?.height >= 8;
+        };
+        if (customRoot && customRoot !== element && element instanceof HTMLInputElement &&
+          !usableNested(element)) continue;
         if (element.getAttribute?.("role") === "combobox" || element.matches?.(
           ".ant-select, .ant-cascader-picker, .el-select, .el-cascader, .ivu-select, .ivu-cascader, .phoenix-select")) {
           // Ant Design and similar libraries often keep a zero-sized search input inside
@@ -2139,7 +2386,7 @@
           // completely because the hidden descendant is not usable. Deduplicate only when
           // the nested native control is itself visible and can actually receive a value.
           const nestedControl = element.querySelector?.("input, textarea, select");
-          if (nestedControl && isVisible(nestedControl)) continue;
+          if (usableNested(nestedControl)) continue;
         }
         seen.add(element);
         controls.push(element);
@@ -2174,10 +2421,12 @@
     // selected record. The standard-form boundary is the record, not its columns.
     const phoenixRecord = element.closest?.(".ux-standard-form");
     if (phoenixRecord) {
-      const controls = Array.from(phoenixRecord.querySelectorAll(CONTROL_SELECTOR))
-        .filter((control) => isVisible(control) && !control.disabled && !isProtectedField(control) &&
+      const visibleControls = Array.from(phoenixRecord.querySelectorAll(CONTROL_SELECTOR))
+        .filter((control) => isVisible(control) && !isProtectedField(control) &&
           !isPresenceGateControl(control));
+      const controls = visibleControls.filter((control) => !control.disabled);
       if (controls.length >= 2 && controls.length <= 40 &&
+        !isPersonalInformationGroup(visibleControls, section) &&
         new Set(controls.map((control) => classifyStructuredField(control, section)).filter(Boolean)).size >= 2) {
         return phoenixRecord;
       }
@@ -2185,9 +2434,11 @@
     let ancestor = element.parentElement;
     for (let depth = 0; ancestor && ancestor !== document.body && depth < 12;
       depth += 1, ancestor = ancestor.parentElement) {
-      const controls = Array.from(ancestor.querySelectorAll(CONTROL_SELECTOR))
-        .filter((control) => isVisible(control) && !control.disabled && !isProtectedField(control) &&
+      const visibleControls = Array.from(ancestor.querySelectorAll(CONTROL_SELECTOR))
+        .filter((control) => isVisible(control) && !isProtectedField(control) &&
           !isPresenceGateControl(control));
+      if (isPersonalInformationGroup(visibleControls, section)) continue;
+      const controls = visibleControls.filter((control) => !control.disabled);
       if (controls.length < 2 || controls.length > 40) continue;
       const descriptors = controls.map((control) => ({
         element: control,
@@ -2292,7 +2543,8 @@
 
   function valueForStructuredField(section, record, key) {
     if (!record) return "";
-    if (key === "endDate" && record.current) return "";
+    // “目前在读/在职” and a planned end date can both be true. When the user
+    // supplied a date, preserve it; the current flag is a separate field.
     if (section === "education" && key === "educationLevel" && !record.educationLevel) return record.degree || "";
     if (section === "work" && key === "responsibilities") return record.responsibilities || record.achievements || "";
     if (section === "project" && key === "description") return record.description || record.achievements || "";
@@ -2301,7 +2553,7 @@
 
   function createReport() {
     return { filled: 0, skipped: 0, unchanged: 0, failed: 0,
-      sections: { basic: 0, education: 0, work: 0, project: 0, award: 0, family: 0 } };
+      sections: { basic: 0, education: 0, work: 0, project: 0, practice: 0, award: 0, family: 0 } };
   }
 
   function chinaMobileFamilyEditor() {
@@ -2772,7 +3024,7 @@
     return rect.bottom > 0 && rect.right > 0 && rect.top < window.innerHeight && rect.left < window.innerWidth;
   }
 
-  const CURRENT_VIEW_ONLY_SECTIONS = new Set(["education", "work", "project", "award"]);
+  const CURRENT_VIEW_ONLY_SECTIONS = new Set(["education", "work", "project", "practice", "award"]);
 
   function groupHasViewportField(group) {
     return group.fields.some(({ element }) => isInViewport(element));
@@ -2790,8 +3042,8 @@
 
   function isPresenceGateControl(element) {
     const hints = compactText(fieldHints(element));
-    return /是否(?:有|具有|拥有).{0,18}(?:教育|学历|实习|工作|项目|科研|研究|家庭|亲属|经历)/.test(hints) ||
-      /do\s*you\s*have.{0,30}(?:education|work|intern|project|research|family|experience)/i.test(hints);
+    return /是否(?:有|具有|拥有).{0,18}(?:教育|学历|实习|工作|项目|实践|科研|研究|家庭|亲属|经历)/.test(hints) ||
+      /do\s*you\s*have.{0,30}(?:education|work|intern|project|practice|research|family|experience)/i.test(hints);
   }
 
   function presenceGateMatchesSection(section, element) {
@@ -2800,6 +3052,7 @@
       education: /教育|学历|education|academic/i,
       work: /实习|工作|任职|work|intern|employment/i,
       project: /项目|科研|研究|project|research/i,
+      practice: /实践|practice/i,
       award: /奖励|获奖|荣誉|奖项|award|honou?r/i,
       family: /家庭|亲属|家属|family|relative/i,
     };
@@ -2941,8 +3194,8 @@
 
     const report = createReport();
     const groupElements = group.container
-      ? Array.from(group.container.querySelectorAll(CONTROL_SELECTOR))
-        .filter((element) => isVisible(element) && !element.disabled && !isProtectedField(element))
+      ? collectControls().filter((element) => group.container.contains(element) &&
+        isVisible(element) && !element.disabled && !isProtectedField(element))
       : group.fields.map(({ element }) => element);
     const compoundHandled = await fillCompoundDateFields(
       section, record, groupElements, overwriteExisting, report,
@@ -3209,8 +3462,8 @@
     const group = focused.length === 1 ? focused[0] : candidates.length === 1 ? candidates[0] : null;
     if (group) {
       const container = group.container;
-      const elements = container ? Array.from(container.querySelectorAll(CONTROL_SELECTOR))
-        .filter((element) => isVisible(element) && !isProtectedField(element)) : group.fields.map(({ element }) => element);
+      const elements = container ? collectControls().filter((element) => container.contains(element) &&
+        isVisible(element) && !isProtectedField(element)) : group.fields.map(({ element }) => element);
       return { status: "ready", special: "", elements: elements.length <= 40 ? elements : group.fields.map(({ element }) => element) };
     }
     if (candidates.length > 1) return { status: "ambiguous" };
@@ -3394,6 +3647,8 @@
   }
 
   function aiValuesEquivalent(element, sourceValue, sourceKey) {
+    if (element instanceof HTMLInputElement && element.type === "checkbox" &&
+      sourceKey === "overseasEducation") return element.checked === (sourceValue === "是");
     if (!aiHasExistingValue(element)) return false;
     if (element instanceof HTMLInputElement && element.type === "checkbox" &&
       typeof sourceValue === "boolean") return element.checked === sourceValue;
@@ -3419,7 +3674,7 @@
       };
       if (level === null ? expected.every(matchesPart) : expected.some(matchesPart)) return true;
     }
-    if (["height", "weight", "workYears"].includes(sourceKey)) {
+    if (["height", "weight", "workYears", "studyDuration", "gpa"].includes(sourceKey)) {
       const numeric = wanted.match(/-?\d+(?:\.\d+)?/)?.[0];
       if (numeric) candidates.push(numeric);
     }
@@ -3447,7 +3702,9 @@
       !isInteractiveDateControl(element) && !LOCATION_PROFILE_KEYS.has(mapping.sourceKey) &&
       !["birthDate", "startDate", "endDate", "awardDate"].includes(mapping.sourceKey)) return false;
     if (element instanceof HTMLInputElement && ["checkbox", "radio"].includes(element.type) &&
-      typeof value !== "boolean" && ![element.value, textOfLabel(element)]
+      typeof value !== "boolean" && !(mapping.sourceKey === "overseasEducation" &&
+        element.type === "checkbox" && ["是", "否"].includes(value)) &&
+      ![element.value, textOfLabel(element)]
         .some((candidate) => aliasesFor(value).some((alias) =>
           compactText(candidate) === compactText(alias)))) return false;
     if (element instanceof HTMLSelectElement) {
@@ -3732,7 +3989,7 @@
       const legacy = await fillSelectedRecord(STRUCTURED_SECTIONS[section].recordsKey, payload.record, overwriteExisting);
       return { ...legacy, aiChecked: false };
     }
-    const identityKey = { education: "school", work: "company", project: "name", award: "awardName", family: "relativeName" }[section];
+    const identityKey = { education: "school", work: "company", project: "name", practice: "organization", award: "awardName", family: "relativeName" }[section];
     if (identityKey && payload.record?.[identityKey]) {
       const knownIdentity = selected.elements.find((element) => aiExpectedSource(section, element) === identityKey);
       const existing = knownIdentity && readControlValue(knownIdentity);

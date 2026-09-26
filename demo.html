@@ -83,6 +83,11 @@
               <label>学历阶段<select name="education_level_1"><option value="">请选择</option><option>高中</option><option>大专</option><option>本科</option><option>硕士</option><option>博士</option></select></label>
               <label>主修专业<input name="education_major_1" /></label>
               <label>学院 / 院系<input name="education_college_1" /></label>
+              <label>学制<input name="education_study_duration_1" /></label>
+              <label>绩点<input name="education_gpa_1" /></label>
+              <label>是否海外教育经历<select name="education_overseas_1"><option value="">请选择</option><option>是</option><option>否</option></select></label>
+              <label>导师<input name="education_advisor_1" /></label>
+              <label>实验室<input name="education_laboratory_1" /></label>
               <label>入学时间<input type="month" name="education_start_1" /></label>
               <label>毕业时间<input type="month" name="education_end_1" /></label>
               <label class="wide">在校经历<textarea name="education_description_1"></textarea></label>
@@ -125,6 +130,19 @@
           </div>
           <button class="add-record" type="button" data-add-demo-record>新增项目经历</button>
         </section>
+        <section class="experience-section" data-autofill-section="practice">
+          <h2>校外实践</h2>
+          <div data-records>
+            <fieldset data-autofill-record>
+              <legend>校外实践 1</legend>
+              <label>开始日期<input type="date" name="practice_start_1" /></label>
+              <label>结束日期<input type="date" name="practice_end_1" /></label>
+              <label>单位或部门<input name="practice_organization_1" /></label>
+              <label class="wide">主要内容<textarea name="practice_content_1"></textarea></label>
+            </fieldset>
+          </div>
+          <button class="add-record" type="button" data-add-demo-record>新增校外实践</button>
+        </section>
         <section class="experience-section" data-autofill-section="family">
           <h2>家庭成员</h2>
           <div data-records>
@@ -149,6 +167,7 @@
         <button class="add-record" type="button" data-demo-record="educations" data-demo-index="1">测试：填入高中经历</button>
         <button class="add-record" type="button" data-demo-record="workExperiences">测试：填入实习经历</button>
         <button class="add-record" type="button" data-demo-record="projects">测试：填入项目经历</button>
+        <button class="add-record" type="button" data-demo-record="extracurricularPractices">测试：填入校外实践</button>
         <button class="add-record" type="button" data-demo-record="familyMembers">测试：填入家庭成员</button>
         <button type="button">提交测试</button>
       </form>
@@ -157,11 +176,12 @@
     <script>
       const sampleRecords = {
         educations: [
-          { school: "复旦大学", educationLevel: "本科", major: "计算机科学与技术", startDate: "2018-09-03", endDate: "2022-06-25" },
+          { school: "复旦大学", educationLevel: "本科", major: "计算机科学与技术", studyDuration: "4年", gpa: "3.7/4.0", overseasEducation: "否", advisor: "张教授", laboratory: "智能计算实验室", startDate: "2018-09-03", endDate: "2022-06-25" },
           { school: "上海中学", educationLevel: "高中", major: "理科", startDate: "2015-09-01", endDate: "2018-06-20" }
         ],
         workExperiences: [{ company: "示例科技有限公司", position: "开发实习生", workType: "实习", startDate: "2021-07-05", endDate: "2021-12-20" }],
         projects: [{ name: "招聘管理平台", role: "核心开发", startDate: "2023-02-03", endDate: "2023-10-21", description: "建设招聘流程管理系统" }],
+        extracurricularPractices: [{ organization: "社区服务中心", mainContent: "参与社区志愿服务与活动组织", startDate: "2023-07-05", endDate: "2023-08-18" }],
         familyMembers: [{ relativeName: "示例亲属", relationship: "父亲", birthDate: "1968-04-10", gender: "男", worksInSystem: "否", employer: "示例单位", position: "职员", phone: "13800000001", politicalStatus: "群众", currentAddress: "上海市" }]
       };
 

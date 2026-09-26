@@ -21,6 +21,7 @@ const RECORD_TYPES = [
   { key: "educations", label: "教育经历", summary: (item) => [item.school, item.educationLevel, item.major] },
   { key: "workExperiences", label: "工作 / 实习经历", summary: (item) => [item.company, item.position, item.workType] },
   { key: "projects", label: "项目经历", summary: (item) => [item.name, item.role] },
+  { key: "extracurricularPractices", label: "校外实践", summary: (item) => [item.organization, item.startDate, item.endDate] },
   { key: "awards", label: "奖励信息", summary: (item) => [item.awardName, item.awardLevel, item.awardDate] },
   { key: "familyMembers", label: "家庭成员", summary: (item) => [item.relativeName, item.relationship] },
 ];
@@ -87,7 +88,7 @@ function renderRecordPicker(resumeData = {}) {
   if (!anyRecords) {
     const empty = document.createElement("p");
     empty.className = "record-picker-empty";
-    empty.textContent = "尚未保存经历、奖励或家庭成员，可在资料管理页新增。";
+    empty.textContent = "尚未保存经历、校外实践、奖励或家庭成员，可在资料管理页新增。";
     recordPicker.append(empty);
   }
 }

@@ -42,6 +42,7 @@ const recordScopeContext = vm.createContext({
   isVisible: () => true,
   isProtectedField: () => false,
   isPresenceGateControl: () => false,
+  isPersonalInformationGroup: () => false,
   classifyStructuredField: (control) => control.key,
   phoenixRecord,
 });
@@ -52,6 +53,20 @@ for (const key of ["startDate", "endDate", "school", "major"]) {
 }
 
 async function testPhoenixControls() {
+  const phoenixInput = {
+    value: "汉族", matches: () => true,
+    closest: () => ({ textContent: "请选择" }),
+  };
+  const phoenixReadContext = vm.createContext({
+    element: phoenixInput, HTMLInputElement: class {},
+  });
+  vm.runInContext(between("function readControlValue", "function dispatchValueEvents"), phoenixReadContext);
+  assert.equal(vm.runInContext("readControlValue(element)", phoenixReadContext), "",
+    "Phoenix 搜索框文字不能冒充已选民族");
+  phoenixInput.closest = () => ({ textContent: "汉族" });
+  assert.equal(vm.runInContext("readControlValue(element)", phoenixReadContext), "汉族",
+    "Phoenix 应读取选择器展示值，而非内部输入框");
+
   const pageField = { value: "", closest() { return this; }, dispatchEvent() {}, click() {} };
   const dateInput = {
     focus() {},
@@ -96,6 +111,70 @@ async function testPhoenixControls() {
   assert.equal(await vm.runInContext("setPhoenixDatePickerValue(end, '2025-06-30')", staleLayerContext), true);
   assert.equal(start.value, "2021-09-01");
   assert.equal(end.value, "2025-06-30");
+
+  // Phoenix briefly keeps the start calendar visible after switching to the
+  // end field. The new calendar must win even if both layers match the same
+  // selector and the previous input retains focus.
+  const rect = (left, top = 50) => ({ left, top, bottom: top + 40, width: 220, height: 40 });
+  const oldInput = { getBoundingClientRect: () => rect(100), focus() {}, dispatchEvent() {} };
+  const newInput = {
+    getBoundingClientRect: () => rect(500), focus() {},
+    dispatchEvent(event) {
+      if (event.key === "Enter" && event.type === "keydown") end.value = this.value;
+    },
+  };
+  const oldLayer = {
+    querySelector(selector) {
+      return selector === ".phoenix-date-picker" ? { getBoundingClientRect: () => rect(100) } : oldInput;
+    },
+    contains(node) { return node === oldInput; },
+  };
+  const newLayer = {
+    querySelector(selector) {
+      return selector === ".phoenix-date-picker" ? { getBoundingClientRect: () => rect(500) } : newInput;
+    },
+    contains(node) { return node === newInput; },
+  };
+  const endWrapper = {
+    getBoundingClientRect: () => ({ left: 500, bottom: 50 }),
+    dispatchEvent() {}, click() {},
+  };
+  end.value = "";
+  end.closest = () => endWrapper;
+  const overlappingContext = vm.createContext({
+    document: {
+      activeElement: oldInput,
+      querySelectorAll: () => [oldLayer, newLayer],
+      elementFromPoint: (x) => x < 400 ? oldInput : newInput,
+    },
+    isVisible: () => true,
+    wait: async () => {},
+    setInputValueWithoutBlur: (input, date) => { input.value = date; },
+    MouseEvent: class {},
+    KeyboardEvent: class { constructor(type, props) { this.type = type; this.key = props.key; } },
+    datePartsMatch: (field, year, month, day) => field.value ===
+      `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+    end,
+  });
+  vm.runInContext(between("function visiblePhoenixLayer", "function setInputValueWithoutBlur"), overlappingContext);
+  vm.runInContext(between("async function setPhoenixDatePickerValue", "async function setElementDatePickerValue"), overlappingContext);
+  assert.equal(await vm.runInContext("setPhoenixDatePickerValue(end, '2026-09-22')", overlappingContext), true);
+  assert.equal(end.value, "2026-09-22");
+
+  // If two panels overlap geometrically, only use one when it is uniquely
+  // topmost; otherwise the caller must leave the field for manual review.
+  overlappingContext.newLayer = newLayer;
+  overlappingContext.oldLayer = oldLayer;
+  overlappingContext.endWrapper = endWrapper;
+  overlappingContext.oldInput = oldInput;
+  overlappingContext.newInput = newInput;
+  vm.runInContext("endWrapper.getBoundingClientRect = () => ({ left: 300, bottom: 50 });", overlappingContext);
+  vm.runInContext("oldLayer.querySelector = () => oldInput; newLayer.querySelector = () => newInput;", overlappingContext);
+  vm.runInContext("oldInput.getBoundingClientRect = newInput.getBoundingClientRect = () => ({ left: 300, top: 50, width: 220, height: 40 });", overlappingContext);
+  vm.runInContext("document.elementFromPoint = () => newInput;", overlappingContext);
+  assert.equal(vm.runInContext("visiblePhoenixLayer('.phoenix-calendar-input', endWrapper)", overlappingContext), newLayer);
+  vm.runInContext("document.elementFromPoint = () => null;", overlappingContext);
+  assert.equal(vm.runInContext("visiblePhoenixLayer('.phoenix-calendar-input', endWrapper)", overlappingContext), null);
 
   const options = ["本科", "硕士研究生"].map((textContent) => ({ textContent }));
   const selectLayer = {

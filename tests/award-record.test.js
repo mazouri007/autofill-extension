@@ -59,9 +59,15 @@ const fillContext = vm.createContext({
   dateSourceFromText: (_text, section) => section === "award" ? "awardDate" : null,
   classifyStructuredField: () => "awardDate",
   fieldHints: (element) => element.label,
-  aiValuesEquivalent: () => false,
+  aiValuesEquivalent: (element, value) => element.value === value,
+  readControlValue: (element) => element.value || "",
   isUsable: () => true,
-  setControlValue: async (_element, value, key) => { filled.push([key, value]); return true; },
+  setControlValue: async (element, value, key) => {
+    element.value = value;
+    filled.push([key, value]);
+    return true;
+  },
+  wait: async () => {},
   dateControl,
 });
 vm.runInContext(source.slice(fillStart, fillEnd), fillContext);

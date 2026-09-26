@@ -62,6 +62,11 @@ const RECORD_TYPES = {
       { key: "college", label: "学院 / 院系", placeholder: "例如：计算机科学技术学院" },
       { key: "location", label: "学校所在地", placeholder: "例如：上海市" },
       { key: "classRanking", label: "班级排名", placeholder: "例如：前 10%" },
+      { key: "studyDuration", label: "学制", placeholder: "例如：4 年 / 3 年" },
+      { key: "gpa", label: "绩点", placeholder: "例如：3.7 / 4.0" },
+      { key: "overseasEducation", label: "是否海外教育经历", type: "select", options: ["", "是", "否"] },
+      { key: "advisor", label: "导师", placeholder: "例如：张教授" },
+      { key: "laboratory", label: "实验室", placeholder: "例如：智能计算实验室" },
       { key: "startDate", label: "入学时间", type: "date" },
       { key: "endDate", label: "毕业时间", type: "date" },
       { key: "current", label: "目前在读", type: "checkbox" },
@@ -105,6 +110,18 @@ const RECORD_TYPES = {
       { key: "current", label: "仍在进行", type: "checkbox" },
       { key: "description", label: "项目描述", type: "textarea", placeholder: "项目背景、目标及主要工作", wide: true, maxLength: 3000 },
       { key: "achievements", label: "项目成果", type: "textarea", placeholder: "结果、数据指标或个人贡献", wide: true, maxLength: 3000 },
+    ],
+  },
+  extracurricularPractices: {
+    countId: "practiceCount",
+    headingCountId: "practiceHeadingCount",
+    title: "校外实践",
+    summaryKeys: ["organization", "startDate", "endDate"],
+    fields: [
+      { key: "startDate", label: "开始日期", type: "date" },
+      { key: "endDate", label: "结束日期", type: "date" },
+      { key: "organization", label: "单位或部门", placeholder: "例如：某公益机构 / 实践部门", required: true },
+      { key: "mainContent", label: "主要内容", type: "textarea", placeholder: "实践内容、承担的工作及收获", wide: true, maxLength: 3000 },
     ],
   },
   awards: {
@@ -171,10 +188,11 @@ function blankCustomField() {
 
 function blankResumeData() {
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     educations: [],
     workExperiences: [],
     projects: [],
+    extracurricularPractices: [],
     awards: [],
     familyMembers: [],
   };

@@ -10,7 +10,7 @@ function validText(value, maxLength) {
 }
 
 function validateAiRequest(request) {
-  if (!request || !["basic", "education", "work", "project", "award", "family"].includes(request.section)) return false;
+  if (!request || !["basic", "education", "work", "project", "practice", "award", "family"].includes(request.section)) return false;
   if (!Array.isArray(request.fields) || !request.fields.length || request.fields.length > 80) return false;
   if (!Array.isArray(request.sources) || !request.sources.length || request.sources.length > 80) return false;
   const fieldIds = new Set();
@@ -55,7 +55,7 @@ function validateAiMappings(raw, request) {
 }
 
 function validateAiSectionRequest(request) {
-  if (!request || !["education", "work", "project", "award", "family"].includes(request.section) ||
+  if (!request || !["education", "work", "project", "practice", "award", "family"].includes(request.section) ||
     !Array.isArray(request.groups) || !request.groups.length || request.groups.length > 20) return false;
   const ids = new Set();
   for (const group of request.groups) {

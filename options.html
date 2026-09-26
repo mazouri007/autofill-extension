@@ -33,6 +33,10 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6l2 2h8v12H4V5Z" /><path d="M8 12h8M8 15h5" /></svg>
             <span>项目经历</span><small id="projectCount">0</small>
           </button>
+          <button type="button" data-section="practice">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 17V8l6-4 6 4v9M9 11h6M9 14h6" /></svg>
+            <span>校外实践</span><small id="practiceCount">0</small>
+          </button>
           <button type="button" data-section="award">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5" /><path d="m9 12-2 9 5-3 5 3-2-9" /></svg>
             <span>奖励信息</span><small id="awardCount">0</small>
@@ -185,6 +189,19 @@
             <div class="record-list" data-record-list="projects"></div>
             <div class="empty-state record-empty" data-record-empty="projects">
               <strong>还没有项目经历</strong><span>新增后可填写项目名称、角色、时间和成果</span>
+            </div>
+          </section>
+
+          <section class="content-section" data-panel="practice" hidden>
+            <div class="section-heading">
+              <div><h2>校外实践 <span id="practiceHeadingCount">0</span></h2><p>保存多条校外实践；在网页打开对应表单后，手动选择一条填写</p></div>
+              <button class="secondary-button" type="button" data-add-record="extracurricularPractices">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>新增校外实践
+              </button>
+            </div>
+            <div class="record-list" data-record-list="extracurricularPractices"></div>
+            <div class="empty-state record-empty" data-record-empty="extracurricularPractices">
+              <strong>还没有校外实践</strong><span>新增后可填写起止日期、单位或部门及主要内容</span>
             </div>
           </section>
 
