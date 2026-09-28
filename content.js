@@ -135,16 +135,18 @@
       fields: [
         ["highestFullTime", /是否最高全日制学历|最高全日制学历/i],
         ["overseasEducation", /是否(?:海外|境外)(?:教育|学习|留学)经历|海外学历|海外教育经历|境外教育经历|留学经历|overseas\s*education|study\s*abroad/i],
-        ["educationType", /是否全日制|学习形式|学习方式|就读方式|学历类型|学历性质|培养方式|教育类型|education\s*type|schoolAgeType/i],
+        ["fullTimeEducation", /是否全日制|是否为全日制|全日制(?:教育|学习)经历/i],
+        ["educationType", /学习形式|学习方式|就读方式|学历类型|学历性质|培养方式|受教育类型|教育类型|education\s*type|schoolAgeType/i],
         ["educationLevel", /最高学历|学历阶段|学历层次|学历|教育程度|education\s*level|qualification/i],
         ["degreeType", /学位类型|学位性质|degree\s*type/i],
         ["degree", /学位类型|学位|degree/i],
         ["college", /学院名称|学院|院系|系别|academy|institute|faculty/i],
+        ["schoolCountry", /学校所属国家|院校所属国家|学校所在国家|院校所在国家|school\s*country/i],
         ["school", /学校名称|毕业院校|所在学校|院校名称|学校|school\s*name|university|college\s*name/i],
         ["secondMajor", /第二专业|辅修专业|second\s*major|minor/i],
         ["major", /主修专业|所学专业|专业名称|专业|speciality|specialty|major/i],
         ["location", /学校所在地|学校地点|院校所在地|school\s*(?:place|location)|所在地/i],
-        ["classRanking", /班级排名|专业排名|成绩排名|class\s*ranking|rank/i],
+        ["classRanking", /年级排名|班级排名|专业排名|成绩排名|class\s*ranking|rank/i],
         ["studyDuration", /学制|修业年限|学习年限|duration\s*of\s*study|years?\s*of\s*schooling/i],
         ["gpa", /平均学分绩点|绩点|grade\s*point\s*average|\bgpa\b/i],
         ["advisor", /导师|指导教师|指导老师|supervisor|advisor|mentor/i],
@@ -152,7 +154,7 @@
         ["startDate", /入学时间|入校时间|教育开始|开始(?:时间|日期)|起始(?:时间|日期)|entrance|start|begin|from/i],
         ["endDate", /毕业时间|教育结束|结束(?:时间|日期)|截止(?:时间|日期)|graduate|graduation|end|to/i],
         ["current", /目前在读|正在就读|在读|至今|current/i],
-        ["primary", /是否主修|主要教育经历|是否主要|最高学历经历|primary/i],
+        ["primary", /是否主修|主要教育经历|是否主要(?:学习|教育)?经历|最高学历经历|primary/i],
         ["description", /在校经历|教育描述|补充说明|课程|学生干部|description|detail/i],
       ],
     },
@@ -321,9 +323,9 @@
       hobbies: "爱好及特长", advantagesWeaknesses: "优势与不足", selfEvaluation: "自我评价及求职目标",
     },
     education: {
-      school: "学校名称", educationLevel: "学历阶段", educationType: "学历类型", degree: "学位",
+      school: "学校名称", educationLevel: "学历阶段", educationType: "学历类型", fullTimeEducation: "是否全日制", degree: "学位",
       degreeType: "学位类型", major: "专业", secondMajor: "第二专业",
-      highestFullTime: "是否最高全日制学历", college: "学院", location: "学校所在地",
+      highestFullTime: "是否最高全日制学历", college: "学院", location: "学校所在地", schoolCountry: "学校所属国家",
       classRanking: "排名", startDate: "入学时间", endDate: "毕业时间", current: "目前在读",
       studyDuration: "学制", gpa: "绩点", overseasEducation: "是否海外教育经历",
       advisor: "导师", laboratory: "实验室", primary: "主要教育经历", description: "在校经历",
@@ -501,10 +503,18 @@
 
   function fieldHints(element) {
     const selectPlaceholder = element instanceof HTMLSelectElement ? element.options[0]?.text : "";
+    // Element/Ant expose a visible select wrapper, while the useful placeholder
+    // and autocomplete identity live on its nested (often readonly) input.
+    const nestedInput = element.matches?.(".el-select, .ant-select, .ivu-select")
+      ? element.querySelector("input:not([type='hidden'])") : null;
     return [
       element.name,
       element.id,
       element.placeholder,
+      nestedInput?.name,
+      nestedInput?.id,
+      nestedInput?.placeholder,
+      nestedInput?.getAttribute?.("aria-label"),
       element.getAttribute?.("aria-label"),
       element.getAttribute?.("title"),
       element.getAttribute?.("data-testid"),
@@ -732,6 +742,13 @@
       // committed React select value; reading "09" here used to report a false fill.
       return String(mokaSelect.querySelector("[class*='sd-Input-display-value']")?.textContent || "").trim();
     }
+    if (element.matches?.(".el-select")) {
+      // The wrapper's textContent can be a long placeholder such as “请选择学制”.
+      // Element keeps the committed selection on its input, not in that text.
+      const input = element.querySelector("input:not([type='hidden'])");
+      const selected = String(input?.value || "").trim();
+      return /^请选择/.test(selected) ? "" : selected;
+    }
     if ("value" in element) return String(element.value || "").trim();
     if (element.matches?.(".ant-select")) {
       // Open Ant menus can be mounted inside the wrapper; their option text is
@@ -884,20 +901,27 @@
       ".ant-select-dropdown", ".el-select-dropdown", ".ivu-select-dropdown",
       "[role='listbox']", "[class*='select-dropdown']", "[class*='selectDropdown']",
     ].join(", "))).filter((panel) => isVisible(panel) && options.some((option) => panel.contains(option)));
-    if (!panels.length) return options;
+    // An Element select can be open alongside an autocomplete list (for example,
+    // the school field beside an education-level select). Only its own popup may
+    // supply choices; a nearby [role=listbox] is not an interchangeable menu.
+    const candidatePanels = wrapper.matches?.(".el-select")
+      ? panels.filter((panel) => panel.matches?.(".el-select-dropdown")) : panels;
+    if (!candidatePanels.length) return wrapper.matches?.(".el-select") ? [] : options;
 
     const controlsId = wrapper.querySelector?.("[aria-controls]")?.getAttribute("aria-controls") ||
       wrapper.getAttribute?.("aria-controls");
     const controlled = controlsId && document.getElementById(controlsId);
-    if (controlled && isVisible(controlled)) {
+    if (controlled && isVisible(controlled) &&
+      (!wrapper.matches?.(".el-select") || candidatePanels.some((panel) =>
+        panel === controlled || panel.contains(controlled)))) {
       const scoped = options.filter((option) => controlled.contains(option));
       if (scoped.length) return scoped;
     }
-    if (panels.length === 1) return options.filter((option) => panels[0].contains(option));
+    if (candidatePanels.length === 1) return options.filter((option) => candidatePanels[0].contains(option));
 
     const anchor = wrapper.getBoundingClientRect?.();
     if (!anchor) return [];
-    const ranked = panels.map((panel) => {
+    const ranked = candidatePanels.map((panel) => {
       const rect = panel.getBoundingClientRect?.();
       const dx = Math.max(0, rect.left - anchor.right, anchor.left - rect.right);
       const dy = Math.max(0, rect.top - anchor.bottom, anchor.top - rect.bottom);
@@ -910,6 +934,15 @@
   }
 
   function selectedCustomValue(wrapper, element) {
+    if (wrapper.matches?.(".el-select")) {
+      const options = visibleOptionsFor(wrapper);
+      const selectedOption = options.filter((option) =>
+        option.matches?.(".el-select-dropdown__item.selected"));
+      if (selectedOption.length === 1) return String(selectedOption[0].textContent || "").trim();
+      // Element's editable input can contain only a temporary filter query.
+      // An open menu without a selected option is not a committed value.
+      if (options.length) return "";
+    }
     const selected = wrapper.querySelector?.([
       ".ant-select-selection-selected-value", ".ant-select-selection-item",
       ".el-select__selected-item", ".ivu-select-selected-value",
@@ -1014,7 +1047,10 @@
       ".ant-select, .el-select, [class*='sd-Dropdown-container'], " +
       "[class*='select-wrapper'], [class*='selectWrapper'], [class*='cascader']",
     ) || element;
-    activateCustomControl(wrapper);
+    const elementMenuOpen = wrapper.matches?.(".el-select") &&
+      wrapper.querySelector?.(".el-select__caret.el-icon-arrow-up") &&
+      visibleOptionsFor(wrapper).length;
+    if (!elementMenuOpen) activateCustomControl(wrapper);
     await wait(80);
 
     const searchInput = wrapper.querySelector?.("input:not([type='hidden'])") ||
@@ -1024,7 +1060,10 @@
     const mokaSelect = wrapper.matches?.("[class*='sd-Dropdown-container']");
     const visibleMokaMatch = mokaSelect && visibleOptionsFor(wrapper).some((option) =>
       optionScore(option.innerText || option.textContent, value) >= 70);
-    if (searchInput && !searchInput.readOnly && searchableAntSelect && !visibleMokaMatch) {
+    const visibleElementMatch = wrapper.matches?.(".el-select") && visibleOptionsFor(wrapper).some((option) =>
+      optionScore(option.innerText || option.textContent, value) >= 70);
+    if (searchInput && !searchInput.readOnly && searchableAntSelect &&
+      !visibleMokaMatch && !visibleElementMatch) {
       searchInput.focus();
       // Blur closes Ant's popup before its option can be clicked. A hidden
       // search input in a non-searchable select must not be edited at all.
@@ -1065,9 +1104,11 @@
     }
     option.item.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     option.item.click();
-    await wait(150);
-    const accepted = optionScore(selectedCustomValue(wrapper, element), value) >= 70;
-    return accepted;
+    for (let attempt = 0; attempt < (wrapper.matches?.(".el-select") ? 4 : 1); attempt += 1) {
+      await wait(attempt ? 80 : 150);
+      if (optionScore(selectedCustomValue(wrapper, element), value) >= 70) return true;
+    }
+    return false;
   }
 
   function splitLocationValue(value) {
@@ -1498,6 +1539,27 @@
     return ranked[0].distance + 256 < ranked[1].distance ? ranked[0].calendar : null;
   }
 
+  function elementCalendarNearControl(calendar, element) {
+    const owner = elementDateWrapper(element) || element;
+    const anchor = owner.getBoundingClientRect?.();
+    const panel = calendar?.getBoundingClientRect?.();
+    if (!anchor?.width || !panel?.width) return false;
+    return elementCalendarHorizontallyAligned(calendar, element) &&
+      Math.min(Math.abs(panel.top - anchor.bottom), Math.abs(panel.bottom - anchor.top)) <= 160;
+  }
+
+  function elementCalendarHorizontallyAligned(calendar, element) {
+    const owner = elementDateWrapper(element) || element;
+    const anchor = owner.getBoundingClientRect?.();
+    const panel = calendar?.getBoundingClientRect?.();
+    if (!anchor?.width || !panel?.width) return false;
+    const horizontal = Math.min(
+      Math.abs(panel.left - anchor.left), Math.abs(panel.right - anchor.right),
+      Math.abs((panel.left + panel.right) / 2 - (anchor.left + anchor.right) / 2),
+    );
+    return horizontal <= Math.max(120, anchor.width * 0.4);
+  }
+
   function datePartsMatch(element, year, month, day = null) {
     const parts = readControlValue(element).match(/\d+/g) || [];
     if (Number(parts[0]) !== year || Number(parts[1]) !== month) return false;
@@ -1562,6 +1624,51 @@
       const cell = candidate.closest?.("td") || candidate;
       return isVisible(candidate) && !/disabled|prev-month|next-month/.test(String(cell.className));
     }) || null;
+  }
+
+  async function selectZhaopinElementYearMonth(element, calendar, year, month) {
+    if (location.hostname !== "xiaoyuan.zhaopin.com") return null;
+    const header = Array.from(calendar.querySelectorAll(".el-date-picker__header-label"))
+      .find((label) => /(?:19|20)\d{2}/.test(label.textContent || "") && isVisible(label));
+    if (!header) return null;
+    header.click();
+    const visibleTable = async (selector) => {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        await wait(60);
+        calendar = visibleElementCalendar(element) || calendar;
+        const table = calendar.querySelector(selector);
+        if (table && isVisible(table)) return table;
+      }
+      return null;
+    };
+    let yearTable = await visibleTable(".el-year-table");
+    if (!yearTable) return null;
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const decade = Number(calendar.querySelector(".el-date-picker__header-label")?.textContent?.match(/(?:19|20)\d{2}/)?.[0]);
+      if (!decade) return null;
+      if (year >= decade && year < decade + 10) break;
+      const button = elementDateNavigationButton(calendar, year < decade ? "previous" : "next", "year");
+      if (!button) return null;
+      button.click();
+      yearTable = await visibleTable(".el-year-table");
+      if (!yearTable) return null;
+    }
+    const yearCell = Array.from(yearTable.querySelectorAll("td"))
+      .find((cell) => Number((cell.textContent || "").trim()) === year &&
+        isVisible(cell) && !/disabled/.test(String(cell.className)));
+    if (!clickElementDateCell(yearCell)) return null;
+    const monthTable = await visibleTable(".el-month-table");
+    if (!monthTable) return null;
+    const chineseMonths = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
+    const monthCell = Array.from(monthTable.querySelectorAll("td"))
+      .find((cell) => {
+        const label = (cell.textContent || "").trim();
+        return isVisible(cell) && !/disabled/.test(String(cell.className)) &&
+          (Number(label.match(/\d{1,2}/)?.[0]) === month || label === `${chineseMonths[month]}月`);
+      });
+    if (!clickElementDateCell(monthCell)) return null;
+    if (!await visibleTable(".el-date-table")) return null;
+    return calendar;
   }
 
   function reachableDocuments(rootDocument = document, seen = new Set()) {
@@ -1713,6 +1820,8 @@
     const targetMonth = Number(match[2]);
     const targetDay = match[3] ? Number(match[3]) : null;
     const wrapper = elementDateWrapper(element) || element;
+    const isZhaopinDate = location.hostname === "xiaoyuan.zhaopin.com" &&
+      Boolean(wrapper.matches?.(".el-date-editor"));
     const acceptedAfterBlur = async () => {
       // Some controlled pickers briefly display a value before their form model
       // rejects it. Verify after the same blur a user would cause on leaving it.
@@ -1720,27 +1829,42 @@
       await wait(120);
       return datePartsMatch(element, targetYear, targetMonth, targetDay);
     };
+    const waitForOwnCalendar = async (polls = 8) => {
+      for (let poll = 0; poll < polls; poll += 1) {
+        const candidate = visibleElementCalendar(element);
+        if (candidate && (elementCalendarNearControl(candidate, element) ||
+          (isZhaopinDate && document.activeElement === element &&
+            elementCalendarHorizontallyAligned(candidate, element)))) return candidate;
+        await wait(isZhaopinDate ? 80 : 60);
+      }
+      return null;
+    };
 
-    if (!openCalendar) {
+    // A user may have opened the target picker before choosing a record in the
+    // extension. Clicking its input again toggles some Element pickers closed.
+    let calendar = openCalendar && elementCalendarNearControl(openCalendar, element)
+      ? openCalendar : await waitForOwnCalendar(1);
+    if (!calendar) {
       element.focus?.();
-      element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-      element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-      element.click?.();
-      await wait(120);
+      // Element UI may open on focus alone. Do not follow that focus with a
+      // synthetic click that immediately closes the newly opened picker.
+      calendar = await waitForOwnCalendar(isZhaopinDate ? 25 : 4);
+      if (!calendar) {
+        element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+        element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+        element.click?.();
+        calendar = await waitForOwnCalendar(isZhaopinDate ? 25 : 8);
+      }
     }
-    let calendar = openCalendar || visibleElementCalendar(element);
     if (!calendar && wrapper !== element) {
       wrapper.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
       wrapper.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
       wrapper.click?.();
-      await wait(120);
-      calendar = visibleElementCalendar(element);
+      calendar = await waitForOwnCalendar(isZhaopinDate ? 25 : 8);
     }
     const dateValue = `${String(targetYear).padStart(4, "0")}-${String(targetMonth).padStart(2, "0")}` +
       (targetDay === null ? "" : `-${String(targetDay).padStart(2, "0")}`);
-    if (!calendar) return directDateInputFallback(
-      element, dateValue, targetYear, targetMonth, targetDay,
-    );
+    if (!calendar) return directDateInputFallback(element, dateValue, targetYear, targetMonth, targetDay);
     const exactCell = exactElementDateCell(calendar, dateValue);
     if (exactCell) {
       clickElementDateCell(exactCell);
@@ -1749,44 +1873,42 @@
       return directDateInputFallback(element, dateValue, targetYear, targetMonth, targetDay);
     }
 
-    let displayed = displayedElementDate(calendar);
-    if (!displayed.year) return directDateInputFallback(
-      element, dateValue, targetYear, targetMonth, targetDay,
-    );
-    const yearDifference = targetYear - displayed.year;
-    if (Math.abs(yearDifference) > 80) return directDateInputFallback(
-      element, dateValue, targetYear, targetMonth, targetDay,
-    );
-    if (yearDifference) {
-      for (let count = 0; count < Math.abs(yearDifference); count += 1) {
-        const yearButton = elementDateNavigationButton(
-          calendar, yearDifference < 0 ? "previous" : "next", "year",
-        );
-        if (!yearButton) return false;
-        yearButton.click();
-        await wait(100);
-        calendar = visibleElementCalendar(element) || calendar;
-      }
+    if (targetDay !== null && Math.abs(targetYear - displayedElementDate(calendar).year) >= 2 &&
+      location.hostname === "xiaoyuan.zhaopin.com") {
+      const quickCalendar = await selectZhaopinElementYearMonth(element, calendar, targetYear, targetMonth);
+      if (quickCalendar) calendar = quickCalendar;
     }
 
-    calendar = visibleElementCalendar(element) || calendar;
-    if (targetDay !== null) {
-      displayed = displayedElementDate(calendar);
-      if (!displayed.month) return directDateInputFallback(
-        element, dateValue, targetYear, targetMonth, targetDay,
-      );
-      const monthDifference = targetMonth - displayed.month;
-      if (monthDifference) {
-        for (let count = 0; count < Math.abs(monthDifference); count += 1) {
-          const monthButton = elementDateNavigationButton(
-            calendar, monthDifference < 0 ? "previous" : "next", "month",
-          );
-          if (!monthButton) return false;
-          monthButton.click();
-          await wait(100);
+    const navigate = async (unit, target) => {
+      const start = displayedElementDate(calendar)[unit];
+      if (!start || Math.abs(target - start) > (unit === "year" ? 80 : 12)) return false;
+      let missed = 0;
+      for (let attempt = 0; attempt < Math.abs(target - start) + 4; attempt += 1) {
+        const before = displayedElementDate(calendar)[unit];
+        if (before === target) return true;
+        const button = elementDateNavigationButton(calendar, target < before ? "previous" : "next", unit);
+        if (!button) return false;
+        button.click();
+        let after = before;
+        // Wait for the rendered header, not a fixed number of clicks. SPA date
+        // pickers can drop a click during a transition or redraw the buttons.
+        for (let poll = 0; poll < 8 && after === before; poll += 1) {
+          await wait(60);
           calendar = visibleElementCalendar(element) || calendar;
+          after = displayedElementDate(calendar)[unit];
         }
+        if (after === before) {
+          if (++missed >= 2) return false;
+          continue;
+        }
+        if (!after || Math.abs(target - after) >= Math.abs(target - before)) return false;
+        missed = 0;
       }
+      return displayedElementDate(calendar)[unit] === target;
+    };
+    if (!await navigate("year", targetYear)) return false;
+    if (targetDay !== null) {
+      if (!await navigate("month", targetMonth)) return false;
 
       const dayCell = exactElementDateCell(calendar, dateValue) || Array.from(calendar.querySelectorAll(
         ".el-date-table td, [class*='date-table'] td",
@@ -1891,7 +2013,7 @@
 
   async function setControlValue(element, value, semanticKey = "") {
     if (value === undefined || value === null || value === "") return false;
-    if (semanticKey === "educationType" && /是否全日制/.test(fieldHints(element))) {
+    if (semanticKey === "fullTimeEducation") {
       value = /非全日制|在职|成人|part[- ]?time/i.test(String(value)) ? "否" : "是";
     }
     if (["primary", "current"].includes(semanticKey) && typeof value === "boolean" &&
@@ -1900,7 +2022,7 @@
       return setLocationControlValue(element, value);
     }
     if (element instanceof HTMLInputElement && (element.type === "checkbox" || element.type === "radio")) {
-      if (semanticKey === "overseasEducation" && element.type === "checkbox") {
+      if (["overseasEducation", "fullTimeEducation"].includes(semanticKey) && element.type === "checkbox") {
         if (!["是", "否"].includes(String(value))) return false;
         setChecked(element, value === "是");
       } else {
@@ -2222,8 +2344,10 @@
       const value = valueForStructuredField(section, record, key);
       if (value === "" || value === undefined || value === null || value === false) continue;
       if (element instanceof HTMLInputElement && ["checkbox", "radio"].includes(element.type) &&
-        typeof value !== "boolean" && !(key === "overseasEducation" && element.type === "checkbox" &&
-          ["是", "否"].includes(value))) continue;
+        typeof value !== "boolean" && !(element.type === "checkbox" && (
+          (key === "overseasEducation" && ["是", "否"].includes(value)) ||
+          (key === "fullTimeEducation" && /^(?:全日制|非全日制)$/.test(value))
+        ))) continue;
       usedKeys.add(key);
       sourceKeys.add(key);
       handled.add(element);
@@ -2248,6 +2372,35 @@
       }
     }
     return { handled, sourceKeys };
+  }
+
+  function refreshedRecordControls(container, previous) {
+    if (!container?.isConnected || !previous?.length) return null;
+    const controls = collectControls().filter((element) => container.contains(element) &&
+      isVisible(element) && !element.disabled && !isProtectedField(element));
+    if (controls.length < 2 || controls.length > 40) return null;
+    const before = new Set(previous);
+    return controls.some((element) => !before.has(element)) ? controls : null;
+  }
+
+  async function fillNewStructuredControls(section, record, container, elements, overwriteExisting, report, known) {
+    let current = elements;
+    // A select such as “学历” can mount the rest of a Vue/React form only after
+    // selection. Re-scan the same bounded record, never the whole page.
+    for (let pass = 0; pass < 2; pass += 1) {
+      await wait(80);
+      const refreshed = refreshedRecordControls(container, current);
+      if (!refreshed) break;
+      // A redraw may replace some controls while retaining others. Retry only
+      // genuinely new nodes; otherwise failed read-only pickers are counted and
+      // clicked repeatedly, which can close the calendar opened by the first pass.
+      const extra = await fillKnownStructuredFields(section, record, refreshed,
+        overwriteExisting, report, known.handled);
+      for (const element of extra.handled) known.handled.add(element);
+      for (const key of extra.sourceKeys) known.sourceKeys.add(key);
+      current = refreshed;
+    }
+    return current;
   }
 
   function profileValue(profile, key) {
@@ -2546,6 +2699,16 @@
     // “目前在读/在职” and a planned end date can both be true. When the user
     // supplied a date, preserve it; the current flag is a separate field.
     if (section === "education" && key === "educationLevel" && !record.educationLevel) return record.degree || "";
+    if (section === "education" && key === "fullTimeEducation") {
+      return /^(?:全日制|非全日制)$/.test(record.educationType || "") ? record.educationType : "";
+    }
+    if (section === "education" && key === "schoolCountry") {
+      if (record.schoolCountry) return record.schoolCountry;
+      // A domestic education flag plus a Chinese city/province is sufficient
+      // evidence for the country; never infer it merely from the applicant's nationality.
+      return record.overseasEducation === "否" && /[\p{Script=Han}]+(?:省|市|自治区)$|^(?:北京市|上海市|天津市|重庆市)$/u.test(record.location || "")
+        ? "中国" : "";
+    }
     if (section === "work" && key === "responsibilities") return record.responsibilities || record.achievements || "";
     if (section === "project" && key === "description") return record.description || record.achievements || "";
     return record[key];
@@ -3203,6 +3366,8 @@
     const known = await fillKnownStructuredFields(
       section, record, groupElements, overwriteExisting, report, compoundHandled,
     );
+    await fillNewStructuredControls(section, record, group.container,
+      groupElements, overwriteExisting, report, known);
     const matched = known.sourceKeys.size;
     if (report.filled) lastUserTarget = null;
     return { status: report.filled ? "filled" : matched ? "no_empty" : "no_match", ...report };
@@ -3647,6 +3812,13 @@
   }
 
   function aiValuesEquivalent(element, sourceValue, sourceKey) {
+    if (sourceKey === "fullTimeEducation") {
+      const expected = /非全日制|在职|成人|part[- ]?time/i.test(String(sourceValue)) ? "否" : "是";
+      if (element instanceof HTMLInputElement && element.type === "checkbox") {
+        return element.checked === (expected === "是");
+      }
+      return optionScore(readControlValue(element), expected) >= 70;
+    }
     if (element instanceof HTMLInputElement && element.type === "checkbox" &&
       sourceKey === "overseasEducation") return element.checked === (sourceValue === "是");
     if (!aiHasExistingValue(element)) return false;
@@ -3702,8 +3874,10 @@
       !isInteractiveDateControl(element) && !LOCATION_PROFILE_KEYS.has(mapping.sourceKey) &&
       !["birthDate", "startDate", "endDate", "awardDate"].includes(mapping.sourceKey)) return false;
     if (element instanceof HTMLInputElement && ["checkbox", "radio"].includes(element.type) &&
-      typeof value !== "boolean" && !(mapping.sourceKey === "overseasEducation" &&
-        element.type === "checkbox" && ["是", "否"].includes(value)) &&
+      typeof value !== "boolean" && !(element.type === "checkbox" && (
+        (mapping.sourceKey === "overseasEducation" && ["是", "否"].includes(value)) ||
+        (mapping.sourceKey === "fullTimeEducation" && /^(?:全日制|非全日制)$/.test(value))
+      )) &&
       ![element.value, textOfLabel(element)]
         .some((candidate) => aliasesFor(value).some((alias) =>
           compactText(candidate) === compactText(alias)))) return false;
@@ -3997,6 +4171,9 @@
         return { status: "record_conflict", ...report };
       }
     }
+    const recordContainer = section === "basic" ? null : selected.elements
+      .map((element) => boundedStructuredContainer(element, section))
+      .find((container) => container && selected.elements.every((element) => container.contains(element)));
     const compoundHandled = section === "basic" ? new Set() : await fillCompoundDateFields(
       section, payload.record, selected.elements, overwriteExisting, report,
     );
@@ -4005,7 +4182,11 @@
       : await fillKnownStructuredFields(
         section, payload.record, selected.elements, overwriteExisting, report, compoundHandled,
       );
-    const remainingElements = selected.elements.filter((element) => !known.handled.has(element));
+    const currentElements = recordContainer
+      ? await fillNewStructuredControls(section, payload.record, recordContainer,
+        selected.elements, overwriteExisting, report, known)
+      : selected.elements;
+    const remainingElements = currentElements.filter((element) => !known.handled.has(element));
     const described = aiDescribeElements(section, remainingElements);
     const sources = aiSources(section, payload).filter(({ key }) => {
       const value = aiSourceValue(section, payload, key);
@@ -4106,7 +4287,55 @@
 
   if (!globalThis.chrome?.runtime?.onMessage || !globalThis.chrome?.storage?.local) return;
 
+  let deferredZhaopinRecordPending = false;
+  function showDeferredRecordStatus(message) {
+    document.querySelector("[data-personal-autofill-deferred-status]")?.remove();
+    const status = document.createElement("div");
+    status.setAttribute("data-personal-autofill-deferred-status", "");
+    status.setAttribute("role", "status");
+    status.style.cssText = "position:fixed;right:16px;top:16px;z-index:2147483647;background:#1f2937;color:#fff;padding:10px 14px;border-radius:8px;font:13px system-ui";
+    status.textContent = message;
+    document.documentElement.append(status);
+    window.setTimeout(() => status.remove(), 7000);
+  }
+
+  async function fillZhaopinRecordAfterPopupCloses(message) {
+    // Element's read-only date picker will not mount while Edge's extension
+    // popup owns the foreground window. The popup acknowledges this request,
+    // closes, then the page regains focus before we activate any date field.
+    await wait(200);
+    for (let attempt = 0; attempt < 40 && !document.hasFocus(); attempt += 1) await wait(100);
+    if (!document.hasFocus()) {
+      showDeferredRecordStatus("网页未获得焦点，尚未填写；请回到此页后重试");
+      return;
+    }
+    const section = Object.keys(STRUCTURED_SECTIONS)
+      .find((key) => STRUCTURED_SECTIONS[key].recordsKey === message.recordType);
+    const result = message.useAi && section
+      ? await fillWithAi(section, { record: message.record }, Boolean(message.overwriteExisting))
+      : await fillSelectedRecord(message.recordType, message.record, Boolean(message.overwriteExisting));
+    const suffix = result.failed ? `，${result.failed} 项需手动处理` : "";
+    showDeferredRecordStatus(result.pendingTargetReview ? "请确认网页右下角的目标表单" :
+      result.pendingReview ? `已填 ${result.filled || 0} 项，${result.pendingReview} 项待确认${suffix}` :
+        result.filled ? `已填 ${result.filled} 项${suffix}；请核对后手动保存` :
+          result.unchanged ? `已有 ${result.unchanged} 项与资料一致${suffix}` :
+            `未能安全填写${suffix || "，请检查目标表单"}`);
+  }
+
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type === "QUEUE_ZHAOPIN_EDUCATION_RECORD") {
+      if (location.hostname !== "xiaoyuan.zhaopin.com" || message.recordType !== "educations" ||
+        !message.record || deferredZhaopinRecordPending) {
+        sendResponse({ queued: false });
+        return false;
+      }
+      deferredZhaopinRecordPending = true;
+      sendResponse({ queued: true });
+      fillZhaopinRecordAfterPopupCloses(message)
+        .catch(() => showDeferredRecordStatus("填写过程出错，未保存；请检查表单并重试"))
+        .finally(() => { deferredZhaopinRecordPending = false; });
+      return false;
+    }
     if (message?.type === "FILL_SELECTED_RECORD") {
       const section = Object.keys(STRUCTURED_SECTIONS)
         .find((key) => STRUCTURED_SECTIONS[key].recordsKey === message.recordType);

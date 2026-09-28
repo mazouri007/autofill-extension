@@ -198,7 +198,9 @@ async function run() {
   const elementPanel = { querySelectorAll: () => [{ textContent: "1", className: "" }] };
   const element = vm.createContext({
     elementField, MouseEvent: class {}, wait: async () => {},
+    location: { hostname: "job.bankcomm.com" },
     elementDateWrapper: () => elementField, visibleElementCalendar: () => elementPanel,
+    elementCalendarNearControl: () => true,
     exactElementDateCell: () => null,
     displayedElementDate: () => ({ year: elementYear, month: elementMonth }),
     elementDateNavigationButton: (_panel, direction, unit) => {

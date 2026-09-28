@@ -162,6 +162,21 @@ async function sendManualFillRequest(button) {
   button.disabled = true;
   try {
     const useAi = Boolean(aiConfig.enabled && aiConfig.apiKey);
+    if (type === "educations" && /^https:\/\/xiaoyuan\.zhaopin\.com\//.test(tab.url || "")) {
+      const queued = await sendMessageWithRecovery(tab.id, {
+        type: "QUEUE_ZHAOPIN_EDUCATION_RECORD",
+        recordType: type,
+        record,
+        overwriteExisting: Boolean(settings.overwriteExisting),
+        useAi,
+      });
+      if (queued?.queued) {
+        window.close();
+        return;
+      }
+      showToast("页面暂时无法接收填写请求，请刷新网页后重试", true);
+      return;
+    }
     if (useAi) showToast("AI 正在定位表单并匹配字段…");
     const response = await sendMessageWithRecovery(tab.id, {
       type: "FILL_SELECTED_RECORD",

@@ -61,6 +61,7 @@ const RECORD_TYPES = {
       { key: "highestFullTime", label: "是否最高全日制学历", type: "select", options: ["", "是", "否"] },
       { key: "college", label: "学院 / 院系", placeholder: "例如：计算机科学技术学院" },
       { key: "location", label: "学校所在地", placeholder: "例如：上海市" },
+      { key: "schoolCountry", label: "学校所属国家", placeholder: "例如：中国" },
       { key: "classRanking", label: "班级排名", placeholder: "例如：前 10%" },
       { key: "studyDuration", label: "学制", placeholder: "例如：4 年 / 3 年" },
       { key: "gpa", label: "绩点", placeholder: "例如：3.7 / 4.0" },
