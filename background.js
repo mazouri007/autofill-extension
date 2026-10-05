@@ -181,8 +181,34 @@ async function handleAiMessage(message, sender) {
   return requestDeepSeek(message.request, aiConfig.apiKey);
 }
 
+async function handleFocusedFillMessage(message, sender) {
+  // Only our top-frame content script may hand off a user-triggered request.
+  // Neither web pages nor popup callers may use this as a generic tab relay.
+  if (sender?.id !== chrome.runtime.id || !Number.isInteger(sender.tab?.id) || sender.frameId !== 0) {
+    return { status: "fill_error", error: "forbidden" };
+  }
+  const request = message.request;
+  if (!request || !["FILL_PERSONAL_INFO", "FILL_SELECTED_RECORD"].includes(request.type)) {
+    return { status: "fill_error", error: "invalid_request" };
+  }
+  const tab = await chrome.tabs.get(sender.tab.id);
+  // The initiating tab, not its URL spelling, is the handoff target. SPA
+  // routes and query parameters can change while the popup releases focus.
+  const browserWindow = await chrome.windows.get(tab.windowId);
+  if (!tab.active || !browserWindow.focused) return { status: "page_not_focused" };
+  // Keep the original broadcast semantics for same-origin and cross-origin
+  // iframe forms, rather than restricting actual filling to the main frame.
+  return chrome.tabs.sendMessage(tab.id, request);
+}
+
 if (globalThis.chrome?.runtime?.onMessage) {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message?.type === "RUN_FOCUSED_FILL") {
+      handleFocusedFillMessage(message, sender)
+        .then(sendResponse)
+        .catch(() => sendResponse({ status: "fill_error" }));
+      return true;
+    }
     if (!["AI_MAP_FIELDS", "AI_LOCATE_SECTION", "AI_TEST_CONNECTION"].includes(message?.type)) return false;
     handleAiMessage(message, sender)
       .then(sendResponse)
@@ -194,4 +220,5 @@ if (globalThis.chrome?.runtime?.onMessage) {
 if (typeof module !== "undefined") module.exports = {
   validateAiRequest, validateAiMappings, validateAiSectionRequest, validateAiSectionChoice,
   requestDeepSeek, requestDeepSeekSection, handleAiMessage,
+  handleFocusedFillMessage,
 };

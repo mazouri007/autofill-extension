@@ -1,7 +1,7 @@
 const PROFILE_GROUPS = {
   basic: [
     "lastName", "firstName", "fullName", "nickname", "gender", "birthDate",
-    "ethnicity", "politicalStatus", "partyJoinDate", "maritalStatus",
+    "ethnicity", "politicalStatus", "partyJoinDate", "maritalStatus", "graduationDate",
     "height", "weight", "healthStatus", "strengths", "workYears",
     "email", "phone", "wechat", "website", "documentType", "documentNumber",
     "addressLine1", "addressLine2", "city", "province", "postalCode", "country",
@@ -134,7 +134,8 @@ const RECORD_TYPES = {
       { key: "awardName", label: "奖励名称", placeholder: "例如：优秀毕业生", required: true },
       { key: "awardLevel", label: "奖励级别", type: "select", options: ["", "国际级", "国家级", "省部级", "市级", "校级", "院系级", "其他"] },
       { key: "awardDate", label: "奖励时间", type: "date" },
-      { key: "description", label: "说明", type: "textarea", placeholder: "奖励内容、颁发单位或其他说明（最多 200 字）", wide: true, maxLength: 200 },
+      { key: "awardingOrganization", label: "授予机构（颁发单位）", placeholder: "例如：教育部 / 学校 / 主办单位" },
+      { key: "description", label: "说明", type: "textarea", placeholder: "奖励内容或其他说明（最多 200 字）", wide: true, maxLength: 200 },
     ],
   },
   familyMembers: {

@@ -1,6 +1,6 @@
 const PROFILE_KEYS = [
   "lastName", "firstName", "fullName", "nickname", "gender", "birthDate",
-  "ethnicity", "politicalStatus", "partyJoinDate", "maritalStatus",
+  "ethnicity", "politicalStatus", "partyJoinDate", "maritalStatus", "graduationDate",
   "email", "phone", "wechat", "website", "documentType", "documentNumber",
   "addressLine1", "addressLine2", "city", "province", "postalCode", "country",
   "householdRegistration", "nativePlace", "studentOrigin", "birthPlace", "currentResidence",
@@ -27,6 +27,7 @@ const RECORD_TYPES = [
 ];
 
 let toastTimer;
+let popupFillPending = false;
 
 function showToast(message, isError = false) {
   window.clearTimeout(toastTimer);
@@ -41,16 +42,37 @@ function countBasicItems(profile = {}, customFields = []) {
     customFields.filter((item) => item?.label && item?.value).length;
 }
 
-async function sendMessageWithRecovery(tabId, message) {
+async function sendMessageWithRecovery(tabId, message, options) {
   try {
-    return await chrome.tabs.sendMessage(tabId, message);
+    return await chrome.tabs.sendMessage(tabId, message, options);
   } catch (initialError) {
     if (!chrome.scripting?.executeScript) throw initialError;
     await chrome.scripting.executeScript({
       target: { tabId, allFrames: true },
       files: ["content.js"],
     });
-    return chrome.tabs.sendMessage(tabId, message);
+    return chrome.tabs.sendMessage(tabId, message, options);
+  }
+}
+
+async function queueFillAfterPopupCloses(tabId, request) {
+  if (popupFillPending) return;
+  popupFillPending = true;
+  try {
+    // Only the main frame coordinates focus. The existing fill request is later
+    // broadcast to all frames, so embedded recruitment forms keep working.
+    const response = await sendMessageWithRecovery(tabId, {
+      type: "QUEUE_FILL_AFTER_POPUP_CLOSES", request,
+    }, { frameId: 0 });
+    if (response?.queued) {
+      window.close();
+      return;
+    }
+    showToast(response?.error === "busy"
+      ? "当前网页正在填写，请完成后再试"
+      : "页面暂时无法接收填写请求，请重新加载插件后重试", true);
+  } finally {
+    popupFillPending = false;
   }
 }
 
@@ -114,32 +136,13 @@ async function sendFillRequest() {
 
   try {
     const useAi = Boolean(stored.aiConfig?.enabled && stored.aiConfig?.apiKey);
-    if (useAi) showToast("AI 正在检查当前表单…");
-    const response = await sendMessageWithRecovery(tab.id, {
+    await queueFillAfterPopupCloses(tab.id, {
       type: "FILL_PERSONAL_INFO",
       profile: stored.profile || {},
       customFields: stored.customFields || [],
       overwriteExisting: Boolean(stored.settings?.overwriteExisting),
       useAi,
     });
-
-    if (response?.status === "ai_unavailable") {
-      showToast(`AI 暂时不可用（${response.error || "连接失败"}），未填写`, true);
-      return;
-    }
-    if (response?.pendingReview) {
-      showToast(`已填写 ${response.filled || 0} 项${response.unchanged ? `、已有 ${response.unchanged} 项一致` : ""}，${response.pendingReview} 项待确认${response.failed ? `，${response.failed} 项需手动处理` : ""}`);
-      return;
-    }
-
-    if (!response?.filled) {
-      showToast(response?.failed ? `${response.failed} 项控件未能安全填写，请手动处理`
-        : response?.unchanged ? `网页已有 ${response.unchanged} 项与资料一致，无需重复填写`
-          : "当前网页没有可填写的空白字段", Boolean(response?.failed || !response?.unchanged));
-      return;
-    }
-    const failedText = response.failed ? `，${response.failed} 项未匹配` : "";
-    showToast(`已填写 ${response.filled} 个字段${failedText}`);
   } catch (_) {
     showToast("页面连接失败，请刷新当前网页后重试", true);
   }
@@ -162,59 +165,13 @@ async function sendManualFillRequest(button) {
   button.disabled = true;
   try {
     const useAi = Boolean(aiConfig.enabled && aiConfig.apiKey);
-    if (type === "educations" && /^https:\/\/xiaoyuan\.zhaopin\.com\//.test(tab.url || "")) {
-      const queued = await sendMessageWithRecovery(tab.id, {
-        type: "QUEUE_ZHAOPIN_EDUCATION_RECORD",
-        recordType: type,
-        record,
-        overwriteExisting: Boolean(settings.overwriteExisting),
-        useAi,
-      });
-      if (queued?.queued) {
-        window.close();
-        return;
-      }
-      showToast("页面暂时无法接收填写请求，请刷新网页后重试", true);
-      return;
-    }
-    if (useAi) showToast("AI 正在定位表单并匹配字段…");
-    const response = await sendMessageWithRecovery(tab.id, {
+    await queueFillAfterPopupCloses(tab.id, {
       type: "FILL_SELECTED_RECORD",
       recordType: type,
       record,
       overwriteExisting: Boolean(settings.overwriteExisting),
       useAi,
     });
-    const statusMessages = {
-      no_target: "当前屏幕未显示可填写的对应表单，请先打开或滚动到目标编辑器",
-      ambiguous: "有多个同类表单，请先点击目标表单中的输入框",
-      wrong_stage: "所选学历与网页表单阶段不符，未填写",
-      record_conflict: "当前表单已有另一条记录，请先新增或切换到正确表单",
-      project_conflict: "当前表单已有另一个项目，请先点选空白项目表单",
-      no_match: "找到表单，但没有匹配到可填写字段",
-      no_empty: "字段已有内容或控件无法安全填写，请检查网页表单",
-      ai_unavailable: `AI 暂时不可用（${response?.error || "连接失败"}），未填写`,
-    };
-    if (response?.pendingTargetReview) {
-      showToast("请在网页右下角确认要填写的表单区域");
-      return;
-    }
-    if (response?.pendingReview) {
-      showToast(`已填入 ${response.filled || 0} 项${response.unchanged ? `、已有 ${response.unchanged} 项一致` : ""}，${response.pendingReview} 项待确认${response.failed ? `，${response.failed} 项需手动处理` : ""}`);
-      return;
-    }
-    if (response?.unchanged && !response?.filled && !response?.failed) {
-      showToast(`目标表单已有 ${response.unchanged} 项与资料一致，无需重复填写`);
-      return;
-    }
-    if (response?.status !== "filled") {
-      showToast(response?.failed ? `${response.failed} 项控件未能安全填写，请手动处理`
-        : statusMessages[response?.status] || "此页面暂时无法填写该资料", true);
-      return;
-    }
-    const suffix = response.failed ? `，${response.failed} 项未匹配` : "";
-    const manualReview = response.manualReview ? `；${response.manualReview}` : "";
-    showToast(`已填入 ${response.filled} 项${suffix}${manualReview}`);
   } catch (_) {
     showToast("页面连接失败，请刷新当前网页后重试", true);
   } finally {

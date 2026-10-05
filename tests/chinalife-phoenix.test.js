@@ -112,6 +112,63 @@ async function testPhoenixControls() {
   assert.equal(start.value, "2021-09-01");
   assert.equal(end.value, "2025-06-30");
 
+  // Beisen's month-only Phoenix calendar has no .phoenix-calendar-input. The
+  // same adapter must navigate a decade, select the year, then select the month.
+  const monthField = { value: "", closest() { return this; }, dispatchEvent() {}, click() {} };
+  let selectedYear = 2026;
+  let decadeStart = 2020;
+  let yearPanelOpen = false;
+  const yearSelect = { textContent: "2026年", click() { yearPanelOpen = true; } };
+  const previousDecade = { click() { decadeStart -= 10; } };
+  const yearPanel = {
+    querySelector(selector) {
+      if (selector === ".phoenix-calendar-year-panel-decade-select") {
+        return { textContent: `${decadeStart}-${decadeStart + 9}` };
+      }
+      if (selector === ".phoenix-calendar-year-panel-prev-decade-btn") return previousDecade;
+      return null;
+    },
+    querySelectorAll(selector) {
+      if (selector !== ".phoenix-calendar-year-panel-cell") return [];
+      return Array.from({ length: 12 }, (_, index) => {
+        const year = decadeStart + index - 1;
+        return { textContent: String(year), click() {
+          selectedYear = year;
+          yearSelect.textContent = `${year}年`;
+          yearPanelOpen = false;
+        } };
+      });
+    },
+  };
+  const monthCalendar = {
+    querySelector(selector) {
+      if (selector === ".phoenix-calendar-year-select") return yearSelect;
+      return null;
+    },
+    querySelectorAll(selector) {
+      if (selector === ".phoenix-calendar-year-panel") return yearPanelOpen ? [yearPanel] : [];
+      if (selector === ".phoenix-calendar-month-panel-cell, .phoenix-calendar-month-calendar td") {
+        return Array.from({ length: 12 }, (_, index) => ({
+          className: "phoenix-calendar-month-panel-cell", textContent: `${index + 1}月`,
+          click() { monthField.value = `${selectedYear}-${String(index + 1).padStart(2, "0")}`; },
+        }));
+      }
+      return [];
+    },
+  };
+  const monthContext = vm.createContext({
+    monthField,
+    wait: async () => {}, isVisible: () => true,
+    visiblePhoenixLayer: (selector) => selector === ".phoenix-calendar-month-calendar"
+      ? { querySelector: () => monthCalendar } : null,
+    MouseEvent: class {}, KeyboardEvent: class {},
+    datePartsMatch: (field, year, month) => field.value ===
+      `${year}-${String(month).padStart(2, "0")}`,
+  });
+  vm.runInContext(between("async function setPhoenixDatePickerValue", "async function setElementDatePickerValue"), monthContext);
+  assert.equal(await vm.runInContext("setPhoenixDatePickerValue(monthField, '2018-09-01')", monthContext), true);
+  assert.equal(monthField.value, "2018-09");
+
   // Phoenix briefly keeps the start calendar visible after switching to the
   // end field. The new calendar must win even if both layers match the same
   // selector and the previous input retains focus.

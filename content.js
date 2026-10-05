@@ -28,18 +28,18 @@
     ["emergencyContactPhone", /(?:^|\b)(?:emergency[-_ ]?(?:contact[-_ ]?)?(?:phone|mobile|tel)|紧急联系人(?:手机|电话|联系方式)|紧急联系方式|紧急联系电话|应急联系人(?:手机|电话)|应急电话)(?:\b|$)/i],
     ["emergencyContactName", /(?:^|\b)(?:emergency[-_ ]?contact[-_ ]?name|紧急联系人(?:姓名)?|应急联系人姓名)(?:\b|$)/i],
     ["ethnicity", /(?:^|\b)(?:ethnic(?:ity)?|民族)(?:\b|$)/i],
-    ["partyJoinDate", /(?:^|\b)(?:加入党派时间|入党时间|入团时间|party[-_ ]?join[-_ ]?date)(?:\b|$)/i],
+    ["partyJoinDate", /(?:^|\b)(?:加入党派时间|入党时间|入团时间|政治面貌(?:参加|加入)(?:年月|时间|日期)|party[-_ ]?join[-_ ]?date)(?:\b|$)/i],
     ["politicalStatus", /(?:^|\b)(?:political[-_ ]?(?:status|affiliation)|政治面貌|党派)(?:\b|$)/i],
     ["maritalStatus", /(?:^|\b)(?:marital[-_ ]?status|婚姻状况)(?:\b|$)/i],
     ["communicationAddress", /(?:^|\b)(?:通信地址|通讯地址|邮寄地址|mailing[-_ ]?address)(?:\b|$)/i],
-    ["willingToRelocate", /是否服从调剂|服从调剂|willing[-_ ]?to[-_ ]?relocate/i],
+    ["willingToRelocate", /是否服从调剂|服从调剂|是否接受岗位调剂|willing[-_ ]?to[-_ ]?relocate/i],
     ["willingCountyWork", /是否愿意.{0,5}县级公司工作|县级公司工作/i],
     ["relativesRetiredRecently", /近三年是否有亲属.{0,25}退休|近三年.{0,20}亲属.{0,20}退休/i],
     ["relativesInGroup", /是否有亲属.{0,25}(?:中国人寿|广发银行|本集团|应聘集团).{0,5}工作/i],
     ["hasScholarship", /是否获得过奖学金|获得奖学金/i],
     ["studentLeader", /是否为学生干部|学生干部/i],
     ["preferredWorkCity", /期望工作城市|意向工作城市|期望工作地点/i],
-    ["expectedAnnualSalary", /期望待遇|期望年薪|预期年薪/i],
+    ["expectedAnnualSalary", /期望待遇|期望(?:税前)?年薪|预期年薪/i],
     ["hobbies", /爱好及特长|兴趣爱好/i],
     ["advantagesWeaknesses", /优势与不足|优点与不足/i],
     ["selfEvaluation", /自我评价及求职目标|自我评价/i],
@@ -48,6 +48,7 @@
     ["wechat", /(?:^|\b)(?:wechat|weixin|微信号|微信)(?:\b|$)/i],
     ["nickname", /(?:^|\b)(?:nickname|nick name|preferred name|alias|昵称)(?:\b|$)/i],
     ["birthDate", /(?:^|\b)(?:birth[-_ ]?date|birthday|date of birth|dob|出生日期|出生年月|生日)(?:\b|$)/i],
+    ["graduationDate", /毕业(?:时间|日期|年月)|graduat(?:ion|e)[-_ ]?(?:date|time)|date[-_ ]?of[-_ ]?graduation/i],
     ["birthPlace", /(?:^|\b)(?:birth[-_ ]?place|place[-_ ]?of[-_ ]?birth|birthplace|出生地点|出生地)(?:\b|$)/i],
     ["gender", /(?:^|\b)(?:gender|sex|性别)(?:\b|$)/i],
     ["height", /(?:^|\b)(?:height|身高)(?:\b|$)/i],
@@ -78,18 +79,18 @@
     ["emergencyContactPhone", /紧急联系人(?:手机|电话|联系方式)|紧急联系方式|紧急联系电话|应急联系人(?:手机|电话)|应急电话/],
     ["emergencyContactName", /紧急联系人(?:姓名)?|应急联系人姓名/],
     ["ethnicity", /民族/],
-    ["partyJoinDate", /加入党派时间|入党时间|入团时间/],
+    ["partyJoinDate", /加入党派时间|入党时间|入团时间|政治面貌(?:参加|加入)(?:年月|时间|日期)/],
     ["politicalStatus", /政治面貌|党派/],
     ["maritalStatus", /婚姻状况/],
     ["communicationAddress", /通信地址|通讯地址|邮寄地址/],
-    ["willingToRelocate", /是否服从调剂|服从调剂/],
+    ["willingToRelocate", /是否服从调剂|服从调剂|是否接受岗位调剂/],
     ["willingCountyWork", /是否愿意.{0,5}县级公司工作|县级公司工作/],
     ["relativesRetiredRecently", /近三年是否有亲属.{0,25}退休|近三年.{0,20}亲属.{0,20}退休/],
     ["relativesInGroup", /是否有亲属.{0,25}(?:中国人寿|广发银行|本集团|应聘集团).{0,5}工作/],
     ["hasScholarship", /是否获得过奖学金|获得奖学金/],
     ["studentLeader", /是否为学生干部|学生干部/],
     ["preferredWorkCity", /期望工作城市|意向工作城市|期望工作地点/],
-    ["expectedAnnualSalary", /期望待遇|期望年薪|预期年薪/],
+    ["expectedAnnualSalary", /期望待遇|期望(?:税前)?年薪|预期年薪/],
     ["hobbies", /爱好及特长|兴趣爱好/],
     ["advantagesWeaknesses", /优势与不足|优点与不足/],
     ["selfEvaluation", /自我评价及求职目标|自我评价/],
@@ -99,7 +100,8 @@
     ["phone", /手机号码|手机号|联系电话|电话/],
     ["wechat", /微信号|微信/],
     ["nickname", /昵称/],
-    ["birthDate", /出生日期|出生年月|生日/],
+    ["birthDate", /出生日期|出生年月|(?:^|[^发])生日/],
+    ["graduationDate", /毕业(?:时间|日期|年月)|graduat(?:ion|e)(?:date|time)|dateofgraduation/i],
     ["birthPlace", /出生地点|出生地/],
     ["gender", /性别/],
     ["height", /身高/],
@@ -211,11 +213,12 @@
     award: {
       recordsKey: "awards",
       sectionPattern: /奖励信息|获奖经历|获奖情况|奖励情况|荣誉奖励|荣誉信息|表彰奖励|奖项信息|奖项经历|awards?|honou?rs?/i,
-      strongPattern: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|奖励时间|获奖时间|award\s*(?:name|title|level|date)/i,
+      strongPattern: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|奖励时间|获奖时间|授予机构|颁发单位|颁发机构|award\s*(?:name|title|level|date|organization)/i,
       addPattern: /新增|添加|add|new/i,
       fields: [
         ["awardDate", /奖励时间|获奖时间|获奖日期|授奖时间|颁奖时间|奖励日期|获奖年月|award\s*(?:date|time)|date\s*of\s*award/i],
         ["awardLevel", /奖励级别|获奖级别|获奖等级|奖项级别|荣誉级别|奖励等级|award\s*level|prize\s*level/i],
+        ["awardingOrganization", /授予机构|颁发单位|颁发机构|授予单位|授奖单位|授奖机构|award(?:ing)?\s*(?:organization|institution|body|authority)|issuing\s*(?:organization|institution|authority)|awarded\s*by|issued\s*by/i],
         ["awardName", /奖励名称|获奖名称|奖项名称|荣誉名称|奖项|奖项内容|award\s*(?:name|title)|prize\s*name/i],
         ["description", /说明|备注|获奖内容|奖励描述|description|remarks?/i],
       ],
@@ -246,7 +249,7 @@
     work: /工作单位|任职公司|雇主|工作岗位|岗位名称|公司名称|employer|company\s*name/i,
     project: /项目名称|课题名称|项目角色|project\s*(?:name|title|role)/i,
     practice: /校外实践|社会实践|实践单位|实践部门|实践内容|单位或部门|主要内容|practice\s*(?:organization|department|content)/i,
-    award: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|award\s*(?:name|title|level)/i,
+    award: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|授予机构|颁发单位|颁发机构|award\s*(?:name|title|level|organization)/i,
     family: /亲属姓名|家属姓名|家庭成员姓名|与本人关系|亲属关系|家庭关系|relative\s*name|relationship/i,
   };
 
@@ -307,7 +310,7 @@
     basic: {
       lastName: "姓", firstName: "名", fullName: "完整姓名", nickname: "昵称", gender: "性别",
       birthDate: "出生日期", ethnicity: "民族", politicalStatus: "党派或政治面貌",
-      partyJoinDate: "加入党派时间", maritalStatus: "婚姻状况",
+      partyJoinDate: "加入党派时间", maritalStatus: "婚姻状况", graduationDate: "毕业时间",
       email: "电子邮箱", phone: "手机号码", wechat: "微信号",
       website: "个人主页", documentType: "证件类型", documentNumber: "证件号码",
       addressLine1: "详细地址", addressLine2: "地址补充", city: "城市", province: "省份",
@@ -345,7 +348,8 @@
       mainContent: "实践主要内容",
     },
     award: {
-      awardDate: "奖励时间", awardLevel: "奖励级别", awardName: "奖励名称", description: "说明",
+      awardDate: "奖励时间", awardLevel: "奖励级别", awardName: "奖励名称",
+      awardingOrganization: "授予机构或颁发单位", description: "说明",
     },
     family: {
       relativeName: "亲属姓名", relationship: "与本人关系", birthDate: "亲属出生日期", gender: "亲属性别",
@@ -432,17 +436,33 @@
       labels.push(definitionTerm.innerText || definitionTerm.textContent);
     }
 
-    const formItem = element.closest?.(
-      ".form-group, .form-item, .el-form-item, .ant-form-item, [class*='formItem'], [class*='form-item'], td",
-    );
-    if (formItem) {
-      const nearbyLabel = formItem.querySelector(
-        "label, legend, .form-label, .control-label, .el-form-item__label, .ant-form-item-label, [class*='label']",
-      );
-      if (nearbyLabel) labels.push(nearbyLabel.innerText || nearbyLabel.textContent);
-      if (formItem.matches("td")) {
-        const previousCell = formItem.previousElementSibling;
-        if (previousCell) labels.push(previousCell.innerText || previousCell.textContent);
+    // A BEM child such as form-item__control is not the owning form-item. Keep
+    // walking through unlabelled wrappers, but never take the first label of a
+    // multi-field row. This also covers deeply nested custom selectors without
+    // depending on the site's component name or an arbitrary input-to-label gap.
+    const groupSelector = ".form-group, .form-item, .el-form-item, .ant-form-item, [class*='formItem']:not([class*='__']), [class*='form-item']:not([class*='__']), td";
+    const labelSelector = "label, legend, .form-label, .control-label, .el-form-item__label, .ant-form-item-label, [class*='label']";
+    for (let group = element.parentElement, depth = 0;
+      group && group !== document.body && depth < 16;
+      group = group.parentElement, depth += 1) {
+      if (!group.matches?.(groupSelector)) continue;
+      const candidates = Array.from(group.querySelectorAll(labelSelector))
+        .filter((label) => !label.closest?.(CONTROL_SELECTOR) && !label.querySelector?.(CONTROL_SELECTOR) &&
+          label.closest?.(groupSelector) === group)
+        .map((label) => cleanFieldLabelText(label.innerText || label.textContent))
+        .filter((label) => !isHelperOnlyLabel(label));
+      const unique = [...new Set(candidates)];
+      if (unique.length > 1) break;
+      if (unique.length === 1) {
+        labels.push(unique[0]);
+        break;
+      }
+      if (group.matches("td")) {
+        const previousCell = group.previousElementSibling;
+        if (previousCell && !previousCell.querySelector?.(CONTROL_SELECTOR)) {
+          labels.push(previousCell.innerText || previousCell.textContent);
+        }
+        break;
       }
     }
 
@@ -452,7 +472,7 @@
     // accidentally borrowing text from the previous field or another resume section.
     if (!labels.some((label) => String(label || "").trim())) {
       let node = element;
-      siblingSearch: for (let depth = 0; node && node !== document.body && depth < 8;
+      siblingSearch: for (let depth = 0; node && node !== document.body && depth < 16;
         depth += 1, node = node.parentElement) {
         let sibling = node.previousSibling;
         for (let count = 0; sibling && count < 4; count += 1, sibling = sibling.previousSibling) {
@@ -465,7 +485,7 @@
             continue;
           }
           if (sibling.nodeType !== Node.ELEMENT_NODE) continue;
-          if (sibling.matches?.(CONTROL_SELECTOR) || sibling.querySelector?.(CONTROL_SELECTOR)) break;
+          if (sibling.matches?.(CONTROL_SELECTOR) || sibling.querySelector?.(CONTROL_SELECTOR)) break siblingSearch;
           const text = String(sibling.innerText || sibling.textContent || "").replace(/\s+/g, " ").trim();
           if (text && text.length <= 120 && !isHelperOnlyLabel(text)) {
             labels.push(cleanFieldLabelText(text));
@@ -536,6 +556,11 @@
   }
 
   function isProtectedField(element) {
+    // CNPC's education editor also owns certificate numbers, attachment notes
+    // and declaration checkboxes. None may be inferred from an education record
+    // by the deterministic or AI fallback pass.
+    if (globalThis.location?.hostname === "zhaopin.cnpc.com.cn" &&
+      cnpcEducationForm(element) && !cnpcEducationFieldKey(element)) return true;
     const autocomplete = element.getAttribute?.("autocomplete") || "";
     const hints = fieldHints(element);
     const type = (element.getAttribute?.("type") || "").toLowerCase();
@@ -547,6 +572,7 @@
 
   function classifyBasicField(element) {
     if (isProtectedField(element)) return null;
+    if (basicFieldRequiresReview(element)) return null;
     const type = (element.getAttribute?.("type") || "").toLowerCase();
     const hints = fieldHints(element);
     const token = autocompleteToken(element);
@@ -561,6 +587,17 @@
     return COMPACT_CJK_RULES.find(([, pattern]) => pattern.test(compactHints))?.[0] ||
       FIELD_RULES.find(([, pattern]) => pattern.test(hints))?.[0] ||
       null;
+  }
+
+  function basicFieldRequiresReview(element) {
+    const label = compactText(textOfLabel(element) || fieldHints(element));
+    // Conditional explanations and other people's identity fields are not the
+    // applicant's scalar profile. AI may propose a mapping, but only a manual
+    // confirmation (or explicit custom keyword) may write into these controls.
+    return /如有|如无|如曾|若有|若无|请.{0,16}(?:描述|说明|补充)/.test(label) ||
+      (/(?:亲属|家属|家庭成员|配偶|父亲|母亲|父母|导师|监护人|子女)/.test(label) &&
+        /姓名|出生|生日|电话|联系方式|住址|地址|民族|政治面貌|单位|职务|职位/.test(label)) ||
+      /发生日期|发生时间|解除日期|解除时间|惩处事由|不良行为记录/.test(label);
   }
 
   function sectionFromText(text) {
@@ -582,6 +619,9 @@
   }
 
   function detectStructuredSection(element) {
+    if (globalThis.location?.hostname === "zhaopin.cnpc.com.cn" && cnpcEducationForm(element)) {
+      return "education";
+    }
     const explicit = element.closest?.("[data-autofill-section]")?.getAttribute("data-autofill-section");
     if (STRUCTURED_SECTIONS[explicit]) return explicit;
 
@@ -676,7 +716,42 @@
     return null;
   }
 
+  function cnpcEducationForm(element) {
+    if (globalThis.location?.hostname !== "zhaopin.cnpc.com.cn") return null;
+    const form = element.closest?.("form#resumeEducation");
+    return form?.querySelector?.("#schoolCode") &&
+      form.querySelector("#educationStartDate") && form.querySelector("#educationEndDate") ? form : null;
+  }
+
+  function cnpcEducationFieldKey(element) {
+    return ({
+      province: "location", country: "schoolCountry", educationType: "educationType",
+      schoolCode: "school", otherSchoolName: "school", schoolChinaName: "school",
+      educationStartDate: "startDate", educationEndDate: "endDate",
+      xw: "degree", xl: "educationLevel", major: "major", gradePoint: "gpa",
+      otherDesc: "description",
+    })[element.id] || null;
+  }
+
+  function cnpcEducationGroups() {
+    const groups = new Map();
+    for (const element of collectControls()) {
+      const container = cnpcEducationForm(element);
+      const key = cnpcEducationFieldKey(element);
+      if (!container || !key || !isVisible(element) || element.disabled) continue;
+      if (!groups.has(container)) groups.set(container, { container, fields: [] });
+      groups.get(container).fields.push({ element, key, container });
+    }
+    // The school select and optional handwritten school name are alternatives
+    // within one editor, not evidence of two separate education records.
+    return currentViewGroups("education", Array.from(groups.values()).filter((group) =>
+      new Set(group.fields.map(({ key }) => key)).size >= 2));
+  }
+
   function classifyStructuredField(element, section) {
+    if (globalThis.location?.hostname === "zhaopin.cnpc.com.cn" && cnpcEducationForm(element)) {
+      return section === "education" ? cnpcEducationFieldKey(element) : null;
+    }
     const definition = STRUCTURED_SECTIONS[section];
     if (!definition) return null;
     const hints = fieldHints(element);
@@ -719,7 +794,7 @@
   function isUsable(element, overwriteExisting, semanticKey = "") {
     if (element.disabled) return false;
     if (element.readOnly && !isCustomControl(element) && !isInteractiveDateControl(element) &&
-      !hasLocationControlHints(element) && !["birthDate", "startDate", "endDate", "awardDate"].includes(semanticKey)) return false;
+      !hasLocationControlHints(element) && !["birthDate", "graduationDate", "partyJoinDate", "startDate", "endDate", "awardDate"].includes(semanticKey)) return false;
     if (!overwriteExisting && readControlValue(element)) return false;
     return isVisible(element);
   }
@@ -1404,6 +1479,15 @@
     return true;
   }
 
+  function hasLocationPopupEvidence(element) {
+    return Boolean(element.readOnly || isCustomControl(element) ||
+      element.getAttribute?.("aria-haspopup") || element.getAttribute?.("aria-controls") ||
+      element.getAttribute?.("aria-expanded") || element.getAttribute?.("list") ||
+      element.getAttribute?.("onfocus") || element.getAttribute?.("onclick") ||
+      element.closest?.("[class*='picker'], [class*='Picker'], [class*='select'], [class*='Select'], [class*='cascader']") ||
+      element.parentElement?.querySelector?.("button, [role='button'], [aria-haspopup], [class*='arrow'], [class*='trigger']"));
+  }
+
   async function setLocationControlValue(element, value) {
     const parts = splitLocationValue(value);
     if (!parts.length) return false;
@@ -1420,6 +1504,12 @@
       return parts.length === 1 ? setCustomSelectValue(element, parts[0]) : false;
     }
     if (!element.readOnly && level !== null) {
+      setNativeValue(element, projectedValue);
+      return true;
+    }
+    // A plain address input needs no popup polling. Preserve the existing
+    // adapters for controls declaring interaction hooks, triggers or selectors.
+    if (!hasLocationPopupEvidence(element)) {
       setNativeValue(element, projectedValue);
       return true;
     }
@@ -1462,11 +1552,11 @@
 
   function formatDateValue(element, value, semanticKey = "") {
     const type = (element.getAttribute?.("type") || "").toLowerCase();
-    if (!["startDate", "endDate", "birthDate", "partyJoinDate", "awardDate"].includes(semanticKey) && type !== "date" && type !== "month") return value;
+    if (!["startDate", "endDate", "birthDate", "graduationDate", "partyJoinDate", "awardDate"].includes(semanticKey) && type !== "date" && type !== "month") return value;
     const match = String(value || "").match(/^(\d{4})-(\d{2})(?:-(\d{2}))?$/);
     if (!match) return value;
     const [, year, month, suppliedDay] = match;
-    const day = suppliedDay || (semanticKey === "endDate"
+    const day = suppliedDay || (["endDate", "graduationDate"].includes(semanticKey)
       ? String(new Date(Number(year), Number(month), 0).getDate()).padStart(2, "0")
       : "01");
     const hints = dateFormatHints(element);
@@ -1755,6 +1845,96 @@
     }) || null;
   }
 
+  function cnpcDateCalendarFor(element) {
+    const anchor = element.getBoundingClientRect?.();
+    if (!anchor?.width) return null;
+    const panels = Array.from(document.querySelectorAll(".datetimepicker"))
+      .filter((panel) => isVisible(panel) && panel.querySelector(".datetimepicker-days th.switch"))
+      .map((panel) => {
+        const rect = panel.getBoundingClientRect();
+        const dx = Math.min(Math.abs(rect.left - anchor.left), Math.abs(rect.right - anchor.right));
+        const dy = Math.min(Math.abs(rect.top - anchor.bottom), Math.abs(rect.bottom - anchor.top));
+        return { panel, distance: dx * dx + dy * dy, near: dx <= Math.max(150, anchor.width * 0.5) && dy <= 180 };
+      })
+      .filter(({ near }) => near).sort((a, b) => a.distance - b.distance);
+    return panels.length && (!panels[1] || panels[0].distance + 256 < panels[1].distance)
+      ? panels[0].panel : null;
+  }
+
+  function clickCnpcDateCell(cell) {
+    if (!cell || !isVisible(cell) || cell.disabled ||
+      /(?:^|\s)disabled(?:\s|$)/.test(String(cell.className)) ||
+      cell.getAttribute?.("aria-disabled") === "true") return false;
+    cell.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    cell.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    cell.click();
+    return true;
+  }
+
+  async function setCnpcEducationDateValue(element, value) {
+    const form = cnpcEducationForm(element);
+    if (!form || !["educationStartDate", "educationEndDate"].includes(element.id)) return false;
+    const match = String(value).match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if (!match) return false;
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    if (year < 1900 || year > 2200 || month < 1 || month > 12 || day < 1 ||
+      day > new Date(Date.UTC(year, month, 0)).getUTCDate()) return false;
+    // Activate this input afresh; a still-open start calendar must never be
+    // reused for the end date. Only UI selections commit the readonly value.
+    element.scrollIntoView?.({ block: "nearest" });
+    element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    element.focus?.();
+    element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    element.click();
+    let calendar = null;
+    for (let attempt = 0; attempt < 8 && !calendar; attempt += 1) {
+      await wait(60);
+      calendar = cnpcDateCalendarFor(element);
+    }
+    if (!calendar) return false;
+    const view = (unit) => {
+      const panel = calendar.querySelector(`.datetimepicker-${unit}`);
+      return panel && isVisible(panel) ? panel : null;
+    };
+    for (let attempt = 0; attempt < 3 && !view("years"); attempt += 1) {
+      const activeView = view("days") || view("months");
+      if (!clickCnpcDateCell(activeView?.querySelector("th.switch"))) return false;
+      await wait(40);
+    }
+    let yearCell = null;
+    for (let attempt = 0; attempt < 24; attempt += 1) {
+      const years = view("years");
+      if (!years) return false;
+      const cells = Array.from(years.querySelectorAll("span.year"));
+      yearCell = cells.find((cell) => Number(cell.textContent.trim()) === year);
+      if (yearCell) break;
+      const displayedYears = cells.map((cell) => Number(cell.textContent.trim())).filter(Number.isFinite);
+      if (!displayedYears.length) return false;
+      const previous = year < Math.min(...displayedYears);
+      if (!previous && year <= Math.max(...displayedYears)) return false;
+      if (!clickCnpcDateCell(years.querySelector(previous ? "th.prev" : "th.next"))) return false;
+      await wait(40);
+    }
+    if (!clickCnpcDateCell(yearCell)) return false;
+    await wait(40);
+    const months = view("months");
+    const monthCells = Array.from(months?.querySelectorAll("span.month") || []);
+    // Bootstrap's month list is ordered Jan..Dec, independent of locale. Do
+    // not filter disabled months before indexing (that shifts the month).
+    if (monthCells.length !== 12 || !clickCnpcDateCell(monthCells[month - 1])) return false;
+    await wait(40);
+    const days = view("days");
+    const dayCell = Array.from(days?.querySelectorAll("td.day") || []).find((cell) =>
+      Number(cell.textContent.trim()) === day && !/(?:^|\s)(?:old|new)(?:\s|$)/.test(String(cell.className)));
+    if (!clickCnpcDateCell(dayCell)) return false;
+    element.blur?.();
+    form.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    await wait(120);
+    return datePartsMatch(element, year, month, day);
+  }
+
   async function setGenericDatePickerValue(element, value) {
     const match = String(value).match(/^(\d{4})\D?(\d{2})(?:\D?(\d{2}))?\D*$/);
     if (!match) return false;
@@ -1802,6 +1982,65 @@
     wrapper.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
     wrapper.click?.();
     await wait(130);
+    // Phoenix has two distinct calendars. Its month-only calendar (used by
+    // Beisen resume start/end dates) has no editable calendar input at all.
+    // Select a year and month through the UI, while keeping the existing text
+    // input path below for day-precision calendars.
+    const monthLayer = visiblePhoenixLayer(".phoenix-calendar-month-calendar", wrapper);
+    const monthCalendar = monthLayer?.querySelector?.(".phoenix-calendar-month-calendar");
+    if (monthCalendar?.querySelector && monthCalendar?.querySelectorAll) {
+      // Phoenix may replace the whole calendar subtree after selecting a year.
+      // Keep resolving the visible portal instead of querying a detached node.
+      const activeCalendar = () => visiblePhoenixLayer(".phoenix-calendar-month-calendar", wrapper)
+        ?.querySelector?.(".phoenix-calendar-month-calendar");
+      const targetYear = Number(year);
+      const targetMonth = Number(month);
+      const visiblePanel = (selector) => Array.from(activeCalendar()?.querySelectorAll(selector) || [])
+        .find((panel) => isVisible(panel));
+      const clickCalendarItem = (item) => {
+        const target = item?.querySelector?.("a, button") || item;
+        target?.dispatchEvent?.(new MouseEvent("mousedown", { bubbles: true }));
+        target?.dispatchEvent?.(new MouseEvent("mouseup", { bubbles: true }));
+        target?.click?.();
+      };
+      if (targetMonth < 1 || targetMonth > 12) return false;
+      const shownYear = Number(activeCalendar()?.querySelector(".phoenix-calendar-year-select")
+        ?.textContent?.match(/\d{4}/)?.[0]);
+      if (shownYear !== targetYear && !visiblePanel(".phoenix-calendar-year-panel")) {
+        clickCalendarItem(activeCalendar()?.querySelector(".phoenix-calendar-year-select"));
+        await wait(70);
+      }
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const yearPanel = visiblePanel(".phoenix-calendar-year-panel");
+        if (!yearPanel) break;
+        const years = Array.from(yearPanel.querySelectorAll(".phoenix-calendar-year-panel-cell"));
+        const exact = years.find((cell) => Number(cell.textContent?.trim()) === targetYear);
+        if (exact) {
+          clickCalendarItem(exact);
+          await wait(70);
+          break;
+        }
+        const decade = yearPanel.querySelector(".phoenix-calendar-year-panel-decade-select")
+          ?.textContent?.match(/(\d{4})\s*[-–]\s*(\d{4})/);
+        if (!decade) return false;
+        const direction = targetYear < Number(decade[1]) ? "prev" : "next";
+        const button = yearPanel.querySelector(`.phoenix-calendar-year-panel-${direction}-decade-btn`);
+        if (!button) return false;
+        clickCalendarItem(button);
+        await wait(60);
+      }
+      if (visiblePanel(".phoenix-calendar-year-panel")) return false;
+      const monthCells = Array.from(activeCalendar()?.querySelectorAll(".phoenix-calendar-month-panel-cell, .phoenix-calendar-month-calendar td") || [])
+        .filter((cell) => isVisible(cell) && !/disabled/.test(String(cell.className)));
+      const chosenMonth = monthCells.find((cell) => {
+        const label = String(cell.textContent || "").trim();
+        return /^(?:0?[1-9]|1[0-2])\s*月$/.test(label) && Number(label.match(/\d+/)?.[0]) === targetMonth;
+      });
+      if (!chosenMonth) return false;
+      clickCalendarItem(chosenMonth);
+      await wait(150);
+      return datePartsMatch(element, targetYear, targetMonth);
+    }
     const layer = visiblePhoenixLayer(".phoenix-date-picker .phoenix-calendar-input", wrapper);
     const input = layer?.querySelector(".phoenix-calendar-input");
     if (!input) return false;
@@ -2032,12 +2271,17 @@
     }
     if (element instanceof HTMLSelectElement) return setSelectValue(element, value);
     let formatted = formatDateValue(element, String(value), semanticKey);
+    if (globalThis.location?.hostname === "zhaopin.cnpc.com.cn" &&
+      ["startDate", "endDate"].includes(semanticKey) && cnpcEducationForm(element) &&
+      ["educationStartDate", "educationEndDate"].includes(element.id)) {
+      return setCnpcEducationDateValue(element, formatted);
+    }
     if (element instanceof HTMLInputElement && element.type === "number" &&
       ["height", "weight", "workYears", "studyDuration", "gpa"].includes(semanticKey)) {
       formatted = String(value).match(/-?\d+(?:\.\d+)?/)?.[0] || "";
       if (!formatted) return false;
     }
-    if (["birthDate", "startDate", "endDate", "partyJoinDate", "awardDate"].includes(semanticKey) &&
+    if (["birthDate", "graduationDate", "startDate", "endDate", "partyJoinDate", "awardDate"].includes(semanticKey) &&
       element.closest?.(".phoenix-select")) {
       return setPhoenixDatePickerValue(element, formatted);
     }
@@ -2047,7 +2291,7 @@
     if (elementDateWrapper(element)) {
       return setElementDatePickerValue(element, formatted);
     }
-    if (["birthDate", "startDate", "endDate", "partyJoinDate", "awardDate"].includes(semanticKey) &&
+    if (["birthDate", "graduationDate", "startDate", "endDate", "partyJoinDate", "awardDate"].includes(semanticKey) &&
       (element.readOnly || isInteractiveDateControl(element) || /日期|时间|date|month|calendar/i.test(dateFormatHints(element)))) {
       return setGenericDatePickerValue(element, formatted);
     }
@@ -2568,6 +2812,11 @@
   function boundedStructuredContainer(element, section) {
     const inferencePattern = STRUCTURED_INFERENCE_PATTERNS[section];
     if (!inferencePattern) return null;
+    // This legacy form splits a single record into many two-control UL rows.
+    // The explicit editor is the record boundary, not a date/degree row.
+    const cnpcRecord = globalThis.location?.hostname === "zhaopin.cnpc.com.cn" &&
+      section === "education" && cnpcEducationForm(element);
+    if (cnpcRecord) return cnpcRecord;
     // Phoenix renders one repeatable resume record as a ux-standard-form, but splits
     // its date controls and identity fields into separate form-part-body columns.
     // Grouping by the first semantically rich column drops the dates from a manually
@@ -3293,6 +3542,10 @@
   }
 
   function manualCandidateGroups(section) {
+    if (globalThis.location?.hostname === "zhaopin.cnpc.com.cn" && section === "education") {
+      const groups = cnpcEducationGroups();
+      if (groups.length) return groups;
+    }
     const detectedGroups = currentViewGroups(
       section,
       groupDescriptors(collectStructuredDescriptors(section)).filter((group) => {
@@ -3377,12 +3630,13 @@
     const controls = collectControls();
     await fillCompoundBasicLocations(profile, controls, overwriteExisting, state, report);
     for (const field of controls) {
-      if (state.filledElements.has(field) || confirmedStructuredSection(field)) continue;
+      if (state.filledElements.has(field)) continue;
       const customValue = customFieldValue(field, customFields);
       const key = classifyBasicField(field);
       if (!isUsable(field, overwriteExisting, key || "")) continue;
       const value = customValue || (key ? profileValue(profile, key) : "");
       if (!value) continue;
+      if (confirmedStructuredSection(field)) continue;
       try {
         const didFill = await setControlValue(field, value, customValue ? "" : key || "");
         if (!didFill) {
@@ -3409,8 +3663,7 @@
     );
   }
 
-  async function fillPageWithRetries(payload) {
-    const state = { filledElements: new WeakSet() };
+  async function fillPageWithRetries(payload, state = { filledElements: new WeakSet() }) {
     const report = createReport();
     await fillPage(payload, state, report);
     for (const delay of [320]) {
@@ -3424,8 +3677,13 @@
     // Known fields and complex widgets (date pickers/cascaders/custom selects) are more
     // reliable through the local adapters. AI then sees the remaining unfamiliar controls
     // instead of replacing those adapters entirely.
-    const local = await fillPageWithRetries(payload);
-    const ai = await fillWithAi("basic", payload, Boolean(payload.overwriteExisting));
+    aiReviewCleanup?.();
+    const state = { filledElements: new WeakSet() };
+    const local = await fillPageWithRetries(payload, state);
+    const overwriteExisting = Boolean(payload.overwriteExisting);
+    const elements = aiBasicTargetElements(overwriteExisting, state.filledElements, payload);
+    const ai = await fillWithAi("basic", payload, overwriteExisting,
+      { status: "ready", special: "", elements });
     const merged = createReport();
     for (const key of ["filled", "skipped", "unchanged", "failed"]) {
       merged[key] = Number(local[key] || 0) + Number(ai[key] || 0);
@@ -3701,9 +3959,16 @@
       : { status: "no_target" };
   }
 
-  function aiBasicTargetElements() {
-    return collectControls().filter((element) => isVisible(element) && !confirmedStructuredSection(element) &&
-      !isProtectedField(element) && !element.disabled);
+  function aiBasicTargetElements(overwriteExisting = false, filledElements = new WeakSet(), payload = null) {
+    return collectControls().filter((element) => {
+      if (filledElements.has(element) || !isVisible(element) || isProtectedField(element) || element.disabled ||
+        (!overwriteExisting && aiHasExistingValue(element))) return false;
+      const expected = classifyBasicField(element);
+      // Missing profile data must not invite AI to substitute another source.
+      if (payload && expected && !profileValue(payload.profile || {}, expected) &&
+        !customFieldValue(element, payload.customFields || [])) return false;
+      return !confirmedStructuredSection(element);
+    });
   }
 
   function aiDescribeElements(section, elements) {
@@ -3852,7 +4117,7 @@
     }
     if (observed.some((existing) => existing && candidates.some((candidate) =>
       compactText(existing) === compactText(candidate)))) return true;
-    if (["birthDate", "startDate", "endDate", "awardDate"].includes(sourceKey)) {
+    if (["birthDate", "graduationDate", "partyJoinDate", "startDate", "endDate", "awardDate"].includes(sourceKey)) {
       const actualParts = actual.match(/\d+/g) || [];
       const wantedParts = wanted.match(/\d+/g) || [];
       if (actualParts.length >= 2 && wantedParts.length >= 2 && actualParts.length <= 3) {
@@ -3872,7 +4137,7 @@
     const element = target.element;
     if (element instanceof HTMLInputElement && element.readOnly && !isCustomControl(element) &&
       !isInteractiveDateControl(element) && !LOCATION_PROFILE_KEYS.has(mapping.sourceKey) &&
-      !["birthDate", "startDate", "endDate", "awardDate"].includes(mapping.sourceKey)) return false;
+      !["birthDate", "graduationDate", "partyJoinDate", "startDate", "endDate", "awardDate"].includes(mapping.sourceKey)) return false;
     if (element instanceof HTMLInputElement && ["checkbox", "radio"].includes(element.type) &&
       typeof value !== "boolean" && !(element.type === "checkbox" && (
         (mapping.sourceKey === "overseasEducation" && ["是", "否"].includes(value)) ||
@@ -4135,7 +4400,7 @@
       return { status: "wrong_stage", ...report };
     }
     let selected = selectedOverride || (section === "basic"
-      ? { status: "ready", special: "", elements: aiBasicTargetElements() }
+      ? { status: "ready", special: "", elements: aiBasicTargetElements(overwriteExisting, new WeakSet(), payload) }
       : aiManualTargetElements(section));
     if (!selectedOverride && section !== "basic" && selected.status !== "ready") {
       selected = await aiLocateManualSection(section, payload, overwriteExisting, selected.status === "ambiguous");
@@ -4249,6 +4514,7 @@
       usedSources.add(mapping.sourceKey);
       const remembered = aiResult.rememberedForSite[target.fingerprint];
       const uncertain = mapping.confidence < 0.9 || duplicateSource ||
+        (section === "basic" && basicFieldRequiresReview(target.element)) ||
         (expected && expected !== mapping.sourceKey && remembered !== mapping.sourceKey);
       if (uncertain || aiHasExistingValue(target.element)) {
         pending.push(mapping);
@@ -4287,7 +4553,7 @@
 
   if (!globalThis.chrome?.runtime?.onMessage || !globalThis.chrome?.storage?.local) return;
 
-  let deferredZhaopinRecordPending = false;
+  let deferredFillPending = false;
   function showDeferredRecordStatus(message) {
     document.querySelector("[data-personal-autofill-deferred-status]")?.remove();
     const status = document.createElement("div");
@@ -4299,14 +4565,77 @@
     window.setTimeout(() => status.remove(), 7000);
   }
 
+  async function waitForPageFocus() {
+    // A visible tab is not necessarily focused: the extension popup can still
+    // own the foreground. Require two focused observations after it closes.
+    await wait(200);
+    let focusedChecks = 0;
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+      if (document.hasFocus() && document.visibilityState !== "hidden") {
+        if (++focusedChecks >= 2) return "ready";
+      } else focusedChecks = 0;
+      await wait(100);
+    }
+    return "page_not_focused";
+  }
+
+  function deferredFillResultText(result = {}) {
+    if (result.pendingTargetReview) return "请确认网页右下角的目标表单";
+    const failed = result.failed ? `，${result.failed} 项需手动处理` : "";
+    const manualReview = result.manualReview ? `；${result.manualReview}` : "";
+    const progress = result.filled ? `已填 ${result.filled} 项` :
+      result.unchanged ? `已有 ${result.unchanged} 项与资料一致` : "";
+    if (result.pendingReview) return `${progress || "已填 0 项"}，${result.pendingReview} 项待确认${failed}${manualReview}`;
+    if (result.status === "ai_unavailable") return `${progress ? `${progress}；` : ""}AI 暂时不可用（${result.error || "连接失败"}）${failed}`;
+    if (progress) return `${progress}${failed}${manualReview}；请核对后手动保存`;
+    const messages = {
+      page_not_focused: "网页未获得焦点，尚未填写；请回到此页后重试",
+      no_target: "当前屏幕未显示可填写的对应表单，请先打开或滚动到目标编辑器",
+      ambiguous: "有多个同类表单，请先点击目标表单中的输入框",
+      wrong_stage: "所选学历与网页表单阶段不符，未填写",
+      record_conflict: "当前表单已有另一条记录，请先新增或切换到正确表单",
+      project_conflict: "当前表单已有另一个项目，请先点选空白项目表单",
+      no_match: "找到表单，但没有匹配到可安全填写的字段",
+      no_empty: "字段已有内容，无需重复填写；请检查网页表单",
+      fill_error: "填写过程出错，未保存；请检查表单并重试",
+    };
+    return failed ? `未能安全填写${failed}` : messages[result.status] || "当前网页没有可填写的空白字段";
+  }
+
+  function isDeferredFillRequest(request) {
+    if (!request || typeof request !== "object") return false;
+    if (request.type === "FILL_PERSONAL_INFO") {
+      return Boolean(request.profile && typeof request.profile === "object" &&
+        !Array.isArray(request.profile) && Array.isArray(request.customFields));
+    }
+    return request.type === "FILL_SELECTED_RECORD" &&
+      Object.values(STRUCTURED_SECTIONS).some(({ recordsKey }) => recordsKey === request.recordType) &&
+      Boolean(request.record && typeof request.record === "object" && !Array.isArray(request.record) &&
+        recordHasContent(request.record));
+  }
+
+  async function fillAfterPopupCloses(request) {
+    const status = await waitForPageFocus();
+    if (status !== "ready") {
+      showDeferredRecordStatus(deferredFillResultText({ status }));
+      return;
+    }
+    showDeferredRecordStatus(request.useAi ? "正在填写已识别字段，并由 AI 辅助检查…" : "正在填写，请稍候…");
+    // Dispatch through the worker to the same all-frame handlers used before
+    // this change. An unfocused child frame must not fail its own focus gate.
+    const result = await chrome.runtime.sendMessage({
+      type: "RUN_FOCUSED_FILL", request,
+    });
+    showDeferredRecordStatus(deferredFillResultText(result || { status: "fill_error" }));
+  }
+
   async function fillZhaopinRecordAfterPopupCloses(message) {
     // Element's read-only date picker will not mount while Edge's extension
     // popup owns the foreground window. The popup acknowledges this request,
     // closes, then the page regains focus before we activate any date field.
-    await wait(200);
-    for (let attempt = 0; attempt < 40 && !document.hasFocus(); attempt += 1) await wait(100);
-    if (!document.hasFocus()) {
-      showDeferredRecordStatus("网页未获得焦点，尚未填写；请回到此页后重试");
+    const status = await waitForPageFocus();
+    if (status !== "ready") {
+      showDeferredRecordStatus(deferredFillResultText({ status }));
       return;
     }
     const section = Object.keys(STRUCTURED_SECTIONS)
@@ -4323,17 +4652,30 @@
   }
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type === "QUEUE_FILL_AFTER_POPUP_CLOSES") {
+      if (window !== window.top) return false;
+      if (!isDeferredFillRequest(message.request) || deferredFillPending) {
+        sendResponse({ queued: false, error: deferredFillPending ? "busy" : "invalid_request" });
+        return false;
+      }
+      deferredFillPending = true;
+      sendResponse({ queued: true });
+      fillAfterPopupCloses(message.request)
+        .catch(() => showDeferredRecordStatus(deferredFillResultText({ status: "fill_error" })))
+        .finally(() => { deferredFillPending = false; });
+      return false;
+    }
     if (message?.type === "QUEUE_ZHAOPIN_EDUCATION_RECORD") {
       if (location.hostname !== "xiaoyuan.zhaopin.com" || message.recordType !== "educations" ||
-        !message.record || deferredZhaopinRecordPending) {
+        !message.record || deferredFillPending) {
         sendResponse({ queued: false });
         return false;
       }
-      deferredZhaopinRecordPending = true;
+      deferredFillPending = true;
       sendResponse({ queued: true });
       fillZhaopinRecordAfterPopupCloses(message)
         .catch(() => showDeferredRecordStatus("填写过程出错，未保存；请检查表单并重试"))
-        .finally(() => { deferredZhaopinRecordPending = false; });
+        .finally(() => { deferredFillPending = false; });
       return false;
     }
     if (message?.type === "FILL_SELECTED_RECORD") {

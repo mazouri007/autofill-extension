@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN" data-autofill-demo>
+<meta charset="utf-8">
+<title>通用深层标签与安全边界回归</title>
+<style>
+  body{font:16px system-ui;margin:28px;color:#172033;max-width:1100px}
+  .fields-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:16px 0}
+  label{display:block;margin-bottom:6px} input,select,textarea{box-sizing:border-box;width:100%;padding:10px;font:inherit}
+  .form-item__control{width:100%} button{font:inherit;padding:12px;margin-right:12px;cursor:pointer}
+  output{display:block;white-space:pre-wrap;margin:20px 0;padding:16px;background:#edf4ff}
+</style>
+<h1>通用深层标签与安全边界回归</h1>
+<p>仅使用虚构资料，无云端请求，不保存或提交。控件结构模拟深层 Phoenix/BEM 包装，也测试无标准容器的标签。</p>
+<button id="run" type="button">运行完整本地填写测试</button>
+<output id="result">尚未运行</output>
+<section id="personal" class="ux-standard-form"><h2>个人信息</h2></section>
+<section id="education" data-autofill-section="education"><h2>教育经历（应保持空白）</h2></section>
+<script>
+  const wrappers = ['form-item__control','phoenix-unmodeled-layer block','phoenix-unmodeled-layer__inner',
+    'phoenix-unmodeled-layer__protect','phoenix-unmodeled-layer__content','phoenix-select',
+    'phoenix-select__content','phoenix-select__inputWrapper'];
+  function addField(parent, caption, id, options = null, deep = false) {
+    const item = document.createElement('div'); item.className='form-item form-item--phoenix';
+    const label = document.createElement('label'); label.className='form-item__label'; label.textContent=caption;
+    item.append(label);
+    let mount=item;
+    for(const cls of deep ? wrappers : ['form-item__control']) {
+      const node=document.createElement('div'); node.className=cls; mount.append(node); mount=node;
+    }
+    const input=document.createElement(options ? 'select' : 'input'); input.dataset.fixtureId=id;
+    // No id/name/placeholder/autocomplete: production must find the visible label.
+    if(options) for(const text of ['',...options]) {
+      const option=document.createElement('option'); option.value=text; option.textContent=text||'请选择'; input.append(option);
+    }
+    mount.append(input); parent.append(item); return input;
+  }
+  function newRow(parent) { const row=document.createElement('div'); row.className='fields-row'; parent.append(row); return row; }
+  const personal=document.querySelector('#personal');
+  const row1=newRow(personal); addField(row1,'姓名','name'); addField(row1,'出生日期','birth').type='date';
+  const row2=newRow(personal); addField(row2,'民族','ethnicity',['汉族','回族'],true); addField(row2,'婚姻状况','marital',['未婚','已婚'],true);
+  const row3=newRow(personal); addField(row3,'政治面貌','political',['群众','共青团员'],true); addField(row3,'政治面貌参加年月','party');
+  const row4=newRow(personal); addField(row4,'户口所在地','household'); addField(row4,'现居住地址','residence');
+  const row5=newRow(personal); addField(row5,'紧急联系人姓名','emergency'); addField(row5,'紧急联系电话','emergencyPhone');
+  const row6=newRow(personal); addField(row6,'如有亲属在本集团工作，请在此补充亲属姓名、和本人关系，如无请填写无','explanation');
+  addField(row6,'在校期间是否有过惩处，如有请描述发生日期、给予惩处单位及解除日期','event');
+  const anonymous=newRow(personal); const caption=document.createElement('span'); caption.textContent='邮箱'; anonymous.append(caption);
+  let nested=anonymous; for(let i=0;i<10;i++) {const div=document.createElement('div'); nested.append(div);nested=div;}
+  const mail=document.createElement('input');mail.dataset.fixtureId='mail';nested.append(mail);
+  const education=document.querySelector('#education');
+  for(const label of ['学校名称','专业','入学日期','毕业日期']) addField(education,label,'education-'+label);
+</script>
+<script src="../content.js"></script>
+<script>
+  document.querySelector('#run').addEventListener('click',async()=>{
+    const output=document.querySelector('#result'); output.textContent='正在测试…';
+    const start=performance.now();
+    const report=await window.__personalAutofillDemoFill({profile:{
+      fullName:'测试用户',birthDate:'2000-09-09',ethnicity:'汉族',maritalStatus:'未婚',politicalStatus:'共青团员',
+      householdRegistration:'山西省晋中市平遥县',currentResidence:'湖北省武汉市武昌区',email:'sample@example.test',
+      emergencyContactName:'测试联系人',emergencyContactPhone:'12345678900'
+    },customFields:[],overwriteExisting:false});
+    const expected={name:'测试用户',birth:'2000-09-09',ethnicity:'汉族',marital:'未婚',political:'共青团员',
+      party:'',household:'山西省晋中市平遥县',residence:'湖北省武汉市武昌区',mail:'sample@example.test',
+      emergency:'测试联系人',emergencyPhone:'12345678900',explanation:'',event:''};
+    const failures=[];
+    for(const [id,value] of Object.entries(expected)) {
+      const element=document.querySelector(`[data-fixture-id="${id}"]`);
+      if(element.value!==value) failures.push(`${id}: 期望 ${JSON.stringify(value)}，实际 ${JSON.stringify(element.value)}`);
+    }
+    if([...education.querySelectorAll('input')].some(e=>e.value)) failures.push('基本信息误填教育经历');
+    output.textContent=`${failures.length?'失败':'全部通过'}：${Object.keys(expected).length+1} 项断言，${Math.round(performance.now()-start)} ms\n`+
+      `本地填写 ${report.filled} 项，失败 ${report.failed} 项\n`+failures.join('\n');
+  });
+</script>
+</html>
