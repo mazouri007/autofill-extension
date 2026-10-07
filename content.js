@@ -163,10 +163,10 @@
     work: {
       recordsKey: "workExperiences",
       sectionPattern: /工作经历|任职经历|职业经历|实习经历|工作经验|employment|work\s*experience|career/i,
-      strongPattern: /工作单位|公司|雇主|工作岗位|职位|岗位级别|工作形式|工作内容|company|employer|position|job\s*title/i,
+      strongPattern: /工作单位|实习单位|企业名称|公司|雇主|工作岗位|职位|岗位级别|工作形式|工作内容|company|employer|position|job\s*title/i,
       addPattern: /新增|添加|add|new/i,
       fields: [
-        ["company", /工作单位|单位名称|公司名称|任职公司|雇主|company|employer|organization/i],
+        ["company", /工作单位|实习单位|企业名称|单位名称|公司名称|任职公司|雇主|company|employer|organization/i],
         ["companyType", /单位类别|单位性质|公司类型|公司性质|unit\s*prop|unitprop|company\s*type/i],
         ["position", /工作岗位|岗位名称|职位名称|职位|职务|position|job\s*title|role/i],
         ["department", /所在部门|任职部门|部门|department|division|team/i],
@@ -212,14 +212,14 @@
     },
     award: {
       recordsKey: "awards",
-      sectionPattern: /奖励信息|获奖经历|获奖情况|奖励情况|荣誉奖励|荣誉信息|表彰奖励|奖项信息|奖项经历|awards?|honou?rs?/i,
+      sectionPattern: /奖励信息|奖励荣誉|获奖经历|获奖情况|奖励情况|荣誉奖励|荣誉信息|表彰奖励|奖项信息|奖项经历|awards?|honou?rs?/i,
       strongPattern: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|奖励时间|获奖时间|授予机构|颁发单位|颁发机构|award\s*(?:name|title|level|date|organization)/i,
       addPattern: /新增|添加|add|new/i,
       fields: [
         ["awardDate", /奖励时间|获奖时间|获奖日期|授奖时间|颁奖时间|奖励日期|获奖年月|award\s*(?:date|time)|date\s*of\s*award/i],
         ["awardLevel", /奖励级别|获奖级别|获奖等级|奖项级别|荣誉级别|奖励等级|award\s*level|prize\s*level/i],
         ["awardingOrganization", /授予机构|颁发单位|颁发机构|授予单位|授奖单位|授奖机构|award(?:ing)?\s*(?:organization|institution|body|authority)|issuing\s*(?:organization|institution|authority)|awarded\s*by|issued\s*by/i],
-        ["awardName", /奖励名称|获奖名称|奖项名称|荣誉名称|奖项|奖项内容|award\s*(?:name|title)|prize\s*name/i],
+        ["awardName", /奖励名称|获奖名称|奖项名称|荣誉名称|(?:^|\s)奖项(?:\s|$)|奖项内容|award\s*(?:name|title)|prize\s*name/i],
         ["description", /说明|备注|获奖内容|奖励描述|description|remarks?/i],
       ],
     },
@@ -229,7 +229,7 @@
       strongPattern: /亲属姓名|与本人关系|亲属工作单位|亲属职位|政治面貌|现居住地址|relative\s*name|relationship/i,
       fields: [
         ["relativeName", /亲属姓名|家属姓名|成员姓名|家庭成员姓名|(?:^|\s)姓名(?:\s|$)|relative\s*name|family\s*member\s*name/i],
-        ["relationship", /与本人关系|与申请人关系|亲属关系|家庭关系|称谓|relationship|relation/i],
+        ["relationship", /与本人关系|与申请人关系|亲属关系|家庭关系|(?:^|\s|\*)关系(?:\s|$)|称谓|relationship|relation/i],
         ["birthDate", /出生日期|出生年月|生日|date\s*of\s*birth|birth\s*date|birthday/i],
         ["gender", /性别|gender|sex/i],
         ["worksInSystem", /是否移动(?:系统|体系)内任职|是否(?:系统|体系)内任职|(?:系统|体系)内任职|是否在职|work(?:s|ing)?\s*in\s*system/i],
@@ -246,7 +246,7 @@
   // Do not infer a repeated-record section from those shared fields alone.
   const STRUCTURED_INFERENCE_PATTERNS = {
     education: /学校|院校|学历|学位|专业|school|university|degree|major/i,
-    work: /工作单位|任职公司|雇主|工作岗位|岗位名称|公司名称|employer|company\s*name/i,
+    work: /工作单位|实习单位|企业名称|任职公司|雇主|工作岗位|岗位名称|公司名称|employer|company\s*name/i,
     project: /项目名称|课题名称|项目角色|project\s*(?:name|title|role)/i,
     practice: /校外实践|社会实践|实践单位|实践部门|实践内容|单位或部门|主要内容|practice\s*(?:organization|department|content)/i,
     award: /奖励名称|获奖名称|奖项名称|荣誉名称|奖励级别|获奖级别|授予机构|颁发单位|颁发机构|award\s*(?:name|title|level|organization)/i,
@@ -363,6 +363,11 @@
   for (const eventName of ["pointerdown", "focusin"]) {
     document.addEventListener(eventName, (event) => {
       if (!event.isTrusted || !(event.target instanceof Element)) return;
+      const bootstrapTarget = bootstrapSelectParts(event.target)?.select;
+      if (bootstrapTarget) {
+        lastUserTarget = bootstrapTarget;
+        return;
+      }
       if (eventName === "focusin") {
         if (event.target.matches(CONTROL_SELECTOR)) lastUserTarget = event.target;
         return;
@@ -430,6 +435,16 @@
     const parentLabel = element.closest?.("label");
     if (parentLabel) labels.push(parentLabel.innerText);
 
+    // WinTalent keeps hidden alternate inputs before the active editor; sibling
+    // walking must not stop at those and lose this field's own caption.
+    const winTalentCell = element.closest?.(".mdf-table-cell");
+    if (winTalentCell) {
+      const captions = Array.from(winTalentCell.querySelectorAll(".mdf-table-cell-l"))
+        .filter((caption) => caption.closest(".mdf-table-cell") === winTalentCell &&
+          !caption.querySelector(CONTROL_SELECTOR));
+      if (captions.length === 1) labels.push(captions[0].innerText || captions[0].textContent);
+    }
+
     const definitionRow = element.closest?.("dl");
     const definitionTerm = definitionRow?.querySelector?.(":scope > dt");
     if (definitionTerm && definitionRow.querySelector(":scope > dd")?.contains(element)) {
@@ -471,7 +486,8 @@
     // preceding sibling, and stop at another control group, so we gain that label without
     // accidentally borrowing text from the previous field or another resume section.
     if (!labels.some((label) => String(label || "").trim())) {
-      let node = element;
+      let node = element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select") ?
+        bootstrapFieldRoot(element) : element;
       siblingSearch: for (let depth = 0; node && node !== document.body && depth < 16;
         depth += 1, node = node.parentElement) {
         let sibling = node.previousSibling;
@@ -618,7 +634,27 @@
     ].filter(Boolean).join(" ");
   }
 
+  function winTalentRecordContext(element) {
+    const record = element.closest?.(".tableDiv > .mdf-table");
+    if (!record?.matches?.(".tableDiv > .mdf-table")) return null;
+    const editor = record.closest(".edit-resume-div");
+    if (!editor) return null;
+    // WinTalent uses plain div titles and table-like cells, not standard headings.
+    // The title owns a section; each tableDiv owns exactly one repeatable record.
+    const titles = Array.from(editor.querySelectorAll(".mdf-tit"))
+      .filter((title) => title.closest(".edit-resume-div") === editor && !title.querySelector(CONTROL_SELECTOR));
+    const sections = new Set(titles.map((title) => sectionFromText(title.textContent)).filter(Boolean));
+    if (sections.size !== 1) return null;
+    const controls = collectControls(record).filter((control) => isVisible(control) && !isProtectedField(control));
+    if (controls.length < 2 || controls.length > 40) return null;
+    return { record, section: [...sections][0] };
+  }
+
   function detectStructuredSection(element) {
+    if (element.closest?.(".tableDiv > .mdf-table")?.matches?.(".tableDiv > .mdf-table")) {
+      const context = winTalentRecordContext(element);
+      if (context) return context.section;
+    }
     if (globalThis.location?.hostname === "zhaopin.cnpc.com.cn" && cnpcEducationForm(element)) {
       return "education";
     }
@@ -758,7 +794,45 @@
     return definition.fields.find(([, pattern]) => pattern.test(hints))?.[0] || null;
   }
 
+  function bootstrapSelectParts(element) {
+    const wrapper = element.closest?.(".bootstrap-select");
+    if (!wrapper?.matches?.(".bootstrap-select")) return null;
+    const select = wrapper.querySelector(":scope > select");
+    const button = wrapper.querySelector(":scope > button.dropdown-toggle");
+    return select && button ? { wrapper, select, button } : null;
+  }
+
+  function bootstrapFieldRoot(element) {
+    const parts = bootstrapSelectParts(element);
+    if (!parts) return element;
+    // Only split controls within one labelled field, never across neighbouring fields.
+    for (let node = parts.wrapper.parentElement, depth = 0; node && depth < 4;
+      node = node.parentElement, depth += 1) {
+      const selects = Array.from(node.querySelectorAll(".bootstrap-select > select"));
+      if (selects.length > 3) break;
+      if (selects.length < 2) continue;
+      const fields = Array.from(node.querySelectorAll("input, textarea, select"))
+        .filter((control) => !bootstrapSelectParts(control) || bootstrapSelectParts(control).select === control);
+      if (fields.length !== selects.length) break;
+      if (!locationProfileKeyFromText(textOfLabel(node))) break;
+      return node;
+    }
+    return parts.wrapper;
+  }
+
+  function bootstrapLocationLevel(element) {
+    const parts = bootstrapSelectParts(element);
+    if (!parts || parts.select !== element) return null;
+    const root = bootstrapFieldRoot(element);
+    if (root === parts.wrapper) return null;
+    return Array.from(root.querySelectorAll(".bootstrap-select > select")).indexOf(element);
+  }
+
   function isVisible(element) {
+    if (element?.tagName === "SELECT") {
+      const parts = bootstrapSelectParts(element);
+      if (parts?.select === element) return element.isConnected && isVisible(parts.button);
+    }
     if (!element?.isConnected || element.getClientRects().length === 0) return false;
     const style = (element.ownerDocument?.defaultView || window).getComputedStyle(element);
     return style.display !== "none" && style.visibility !== "hidden" && style.opacity !== "0";
@@ -800,6 +874,10 @@
   }
 
   function readControlValue(element) {
+    // Angular-backed Bootstrap lists may auto-display the first newly loaded
+    // option even while ngModel is empty. Do not mistake that for a user value.
+    if (element.tagName === "SELECT" && element.classList?.contains("ng-empty") &&
+      element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select")) return "";
     if (element instanceof HTMLInputElement && (element.type === "checkbox" || element.type === "radio")) {
       return element.checked ? String(element.value || "true") : "";
     }
@@ -930,6 +1008,52 @@
     if (!option?.score) return false;
     setNativeValue(select, option.item.value);
     return true;
+  }
+
+  async function setBootstrapSelectValue(select, value, locationValue = false) {
+    const parts = bootstrapSelectParts(select);
+    if (!parts || !isVisible(parts.button) || select.disabled || parts.button.disabled || select.multiple) return false;
+    const level = locationValue ? locationLevelForField(select) : null;
+    const locations = locationValue ? splitLocationValue(value) : [];
+    const wanted = locationValue ? (level === null ? locations : [locations[level]].filter(Boolean)) : [value];
+    const rank = () => Array.from(select.options).map((option, index) => ({ option, index,
+      score: Math.max(0, ...wanted.map((part) => locationValue ?
+        locationOptionScore(option.textContent || option.value, part) :
+        Math.max(optionScore(option.textContent, part), optionScore(option.value, part)) +
+          ([option.textContent, option.value].some((text) => normalizeMatchText(text) === normalizeMatchText(part)) ? 10 : 0))),
+    })).filter(({ option, score }) => !option.disabled && option.value !== "" &&
+      score >= (locationValue ? 90 : 70)).sort((a, b) => b.score - a.score);
+    // Dependent city/district options can arrive asynchronously after the parent changes.
+    let ranked = rank();
+    for (let attempt = 0; !ranked.length && locationValue && level > 0 && attempt < 10; attempt += 1) {
+      await wait(80);
+      if (!select.isConnected) return false;
+      ranked = rank();
+    }
+    const best = ranked[0];
+    if (!best || ranked[1]?.score === best.score) return false;
+    const menu = parts.wrapper.querySelector(":scope > .dropdown-menu");
+    if (!menu) return false;
+    if (!isVisible(menu)) parts.button.click();
+    try {
+      for (let attempt = 0; attempt < 5; attempt += 1) {
+        const row = menu.querySelector(`[data-original-index="${best.index}"]`);
+        const option = row?.matches("a, [role='option']") ? row : row?.querySelector("a, [role='option']");
+        if (option && isVisible(option) && !row.matches(".disabled") &&
+          option.getAttribute("aria-disabled") !== "true") {
+          option.click();
+          await wait(60);
+          const displayed = parts.button.querySelector(".filter-option")?.textContent || parts.button.textContent;
+          // A DOM-only assignment is not sufficient: both model and visible label must commit.
+          return select.isConnected && !select.classList?.contains("ng-empty") && select.value === best.option.value &&
+            compactText(displayed) === compactText(best.option.textContent);
+        }
+        await wait(60);
+      }
+      return false;
+    } finally {
+      if (isVisible(menu)) parts.button.click();
+    }
   }
 
   function wait(milliseconds) {
@@ -1241,7 +1365,9 @@
       /district|county|区县|县区|所属区|所属县|户籍区|籍贯区|生源区|出生区|居住区|(?:^|户籍|户口|籍贯|生源|出生地?|现居|现住)(?:区|县|区县)$/.test(hints) ||
         atomicHints.some((hint) => /^(?:区|县|区县|县区|district|county)$/.test(hint)),
     ];
-    return levels.filter(Boolean).length === 1 ? levels.findIndex(Boolean) : null;
+    if (levels.filter(Boolean).length === 1) return levels.findIndex(Boolean);
+    return element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select") ?
+      bootstrapLocationLevel(element) : null;
   }
 
   function cascaderWrapper(element) {
@@ -1491,7 +1617,8 @@
   async function setLocationControlValue(element, value) {
     const parts = splitLocationValue(value);
     if (!parts.length) return false;
-    if (element instanceof HTMLSelectElement) return setLocationSelectValue(element, value);
+    if (element instanceof HTMLSelectElement) return element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select") ?
+      setBootstrapSelectValue(element, value, true) : setLocationSelectValue(element, value);
     if (element.closest?.(".phoenix-select")) return setPhoenixAreaValue(element, value);
     if (cascaderWrapper(element)) return setCascaderLocationValue(element, value);
     const level = locationLevelForField(element);
@@ -1874,6 +2001,10 @@
   async function setCnpcEducationDateValue(element, value) {
     const form = cnpcEducationForm(element);
     if (!form || !["educationStartDate", "educationEndDate"].includes(element.id)) return false;
+    return setBootstrapDatePickerValue(element, value, null, form);
+  }
+
+  async function setBootstrapDatePickerValue(element, value, openedCalendar = null, commitContainer = null) {
     const match = String(value).match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
     if (!match) return false;
     const year = Number(match[1]);
@@ -1883,12 +2014,14 @@
       day > new Date(Date.UTC(year, month, 0)).getUTCDate()) return false;
     // Activate this input afresh; a still-open start calendar must never be
     // reused for the end date. Only UI selections commit the readonly value.
-    element.scrollIntoView?.({ block: "nearest" });
-    element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-    element.focus?.();
-    element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-    element.click();
-    let calendar = null;
+    if (!openedCalendar) {
+      element.scrollIntoView?.({ block: "nearest" });
+      element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+      element.focus?.();
+      element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+      element.click();
+    }
+    let calendar = openedCalendar;
     for (let attempt = 0; attempt < 8 && !calendar; attempt += 1) {
       await wait(60);
       calendar = cnpcDateCalendarFor(element);
@@ -1930,7 +2063,7 @@
       Number(cell.textContent.trim()) === day && !/(?:^|\s)(?:old|new)(?:\s|$)/.test(String(cell.className)));
     if (!clickCnpcDateCell(dayCell)) return false;
     element.blur?.();
-    form.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    (commitContainer || element.parentElement)?.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     await wait(120);
     return datePartsMatch(element, year, month, day);
   }
@@ -1943,11 +2076,23 @@
     const day = match[3] ? Number(match[3]) : null;
     let calendar = null;
     for (const target of [element, ...adjacentDateActivationTargets(element)]) {
-      target.focus?.();
+      // WinTalent's choose-date directive opens on focus, not a second click.
+      // After the popup closes the input can remain document.activeElement even
+      // though its calendar was dismissed. Re-arm only this declared directive.
+      const focusTriggered = target === element && element.hasAttribute?.("choose-date");
+      if (focusTriggered) element.blur?.();
+      if (!focusTriggered) target.focus?.();
       target.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+      // Follow native mouse order: focusing first would open the calendar and
+      // the subsequent document mousedown would immediately dismiss it.
+      if (focusTriggered) target.focus?.();
       target.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
       target.click?.();
       await wait(140);
+      // Bootstrap DateTimePicker exposes a specific years/months/days UI. Reuse
+      // the proven calendar navigation, bound to this input, before generic cells.
+      const bootstrapCalendar = cnpcDateCalendarFor(element);
+      if (bootstrapCalendar) return setBootstrapDatePickerValue(element, value, bootstrapCalendar);
       calendar = visibleGenericDateCalendar(element);
       if (calendar) break;
     }
@@ -2269,7 +2414,8 @@
       }
       return true;
     }
-    if (element instanceof HTMLSelectElement) return setSelectValue(element, value);
+    if (element instanceof HTMLSelectElement) return element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select") ?
+      setBootstrapSelectValue(element, value) : setSelectValue(element, value);
     let formatted = formatDateValue(element, String(value), semanticKey);
     if (globalThis.location?.hostname === "zhaopin.cnpc.com.cn" &&
       ["startDate", "endDate"].includes(semanticKey) && cnpcEducationForm(element) &&
@@ -2689,6 +2835,8 @@
   async function fillCompoundBasicLocations(profile, controls, overwriteExisting, state, report) {
     const groups = new Map();
     for (const element of controls) {
+      if (element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select") &&
+        confirmedStructuredSection(element)) continue;
       const level = locationLevelForField(element);
       if (level === null) continue;
       const key = locationGroupKey(element);
@@ -2700,14 +2848,23 @@
       const uniqueLevels = new Set(fields.map(({ level }) => level));
       if (uniqueLevels.size !== fields.length) continue;
       const value = profileValue(profile, key);
-      for (const { element } of fields) {
+      let bootstrapParentFailed = false;
+      for (const { element, level } of fields) {
+        const bootstrap = element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select");
         state.filledElements.add(element);
+        if (bootstrap && bootstrapParentFailed) {
+          report.skipped += 1;
+          continue;
+        }
         if (!isUsable(element, overwriteExisting, key)) {
+          if (bootstrap && locationOptionScore(element.selectedOptions?.[0]?.textContent || "",
+            splitLocationValue(value)[level] || "") < 90) bootstrapParentFailed = true;
           report.skipped += 1;
           continue;
         }
         try {
           if (!await setLocationControlValue(element, value)) {
+            if (bootstrap) bootstrapParentFailed = true;
             report.failed += 1;
             continue;
           }
@@ -2715,6 +2872,7 @@
           report.filled += 1;
           report.sections.basic += 1;
         } catch (_) {
+          if (bootstrap) bootstrapParentFailed = true;
           report.failed += 1;
         }
       }
@@ -2759,11 +2917,15 @@
     return roots;
   }
 
-  function collectControls() {
+  function collectControls(scope = null) {
     const controls = [];
     const seen = new Set();
-    for (const root of collectRoots()) {
-      for (const element of root.querySelectorAll(CONTROL_SELECTOR)) {
+    for (const root of scope ? [scope] : collectRoots()) {
+      for (const candidate of root.querySelectorAll(CONTROL_SELECTOR)) {
+        // The hidden native select is the canonical field; menus/search boxes are not fields.
+        const bootstrap = candidate.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select") ?
+          bootstrapSelectParts(candidate) : null;
+        const element = bootstrap ? bootstrap.select : candidate;
         if (seen.has(element) || isProtectedField(element)) continue;
         const customRoot = element.closest?.(
           ".ant-select, .ant-cascader-picker, .el-select, .el-cascader, .ivu-select, .ivu-cascader, .phoenix-select",
@@ -2812,6 +2974,10 @@
   function boundedStructuredContainer(element, section) {
     const inferencePattern = STRUCTURED_INFERENCE_PATTERNS[section];
     if (!inferencePattern) return null;
+    if (element.closest?.(".tableDiv > .mdf-table")?.matches?.(".tableDiv > .mdf-table")) {
+      const context = winTalentRecordContext(element);
+      if (context) return context.section === section ? context.record : null;
+    }
     // This legacy form splits a single record into many two-control UL rows.
     // The explicit editor is the record boundary, not a date/degree row.
     const cnpcRecord = globalThis.location?.hostname === "zhaopin.cnpc.com.cn" &&
@@ -4146,7 +4312,7 @@
       ![element.value, textOfLabel(element)]
         .some((candidate) => aliasesFor(value).some((alias) =>
           compactText(candidate) === compactText(alias)))) return false;
-    if (element instanceof HTMLSelectElement) {
+    if (element instanceof HTMLSelectElement && !element.closest?.(".bootstrap-select")?.matches?.(".bootstrap-select")) {
       const accepted = new Set(aliasesFor(value).map(compactText));
       const exact = Array.from(element.options).filter((option) =>
         accepted.has(compactText(option.textContent)) || accepted.has(compactText(option.value)));
@@ -4515,6 +4681,9 @@
       const remembered = aiResult.rememberedForSite[target.fingerprint];
       const uncertain = mapping.confidence < 0.9 || duplicateSource ||
         (section === "basic" && basicFieldRequiresReview(target.element)) ||
+        // The saved flag explicitly refers to the China Mobile system. Never
+        // silently reinterpret it as employment at another named company.
+        (section === "family" && mapping.sourceKey === "worksInSystem" && expected !== "worksInSystem") ||
         (expected && expected !== mapping.sourceKey && remembered !== mapping.sourceKey);
       if (uncertain || aiHasExistingValue(target.element)) {
         pending.push(mapping);
@@ -4528,6 +4697,12 @@
       } catch (_) {
         report.failed += 1;
       }
+    }
+    // AI may select a controlling field (e.g. award category) that mounts new
+    // editable inputs. Fill only new controls inside the original record boundary.
+    if (recordContainer && section !== "basic") {
+      await fillNewStructuredControls(section, payload.record, recordContainer,
+        currentElements, overwriteExisting, report, known);
     }
     if (pending.length) aiShowReview(section, payload, pending, described, sources, aiResult.siteKey);
     if (report.filled || pending.length) lastUserTarget = null;

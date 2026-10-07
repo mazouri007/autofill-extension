@@ -137,11 +137,12 @@ async function run() {
   assert.equal(nativeWrites, 0, "交互式日期控件也不能走直接赋值兜底");
 
   const panel = { matches: (selector) => selector === ".el-picker-panel" };
-  const genericField = { focus() {}, dispatchEvent() {}, click() {} };
+  const genericField = { dataset: {}, focus() {}, dispatchEvent() {}, click() {} };
   let selectedByPicker = false;
   const generic = vm.createContext({
     genericField, MouseEvent: class {}, wait: async () => {},
     adjacentDateActivationTargets: () => [],
+    cnpcDateCalendarFor: () => null,
     visibleGenericDateCalendar: () => panel,
     setElementDatePickerValue: async () => { selectedByPicker = true; return true; },
     directDateInputFallback: () => { throw new Error("不应直接改写受控日期输入框"); },
@@ -149,6 +150,30 @@ async function run() {
   vm.runInContext(between("async function setGenericDatePickerValue", "async function setPhoenixDatePickerValue"), generic);
   assert.equal(await vm.runInContext("setGenericDatePickerValue(genericField, '2022-03-01')", generic), true);
   assert.equal(selectedByPicker, true);
+  const bootstrapCalendar = {};
+  generic.cnpcDateCalendarFor = () => bootstrapCalendar;
+  generic.setBootstrapDatePickerValue = async (input, value, calendar) => {
+    assert.equal(input, genericField);
+    assert.equal(value, "2022-03-01");
+    assert.equal(calendar, bootstrapCalendar);
+    return true;
+  };
+  assert.equal(await vm.runInContext("setGenericDatePickerValue(genericField, '2022-03-01')", generic), true,
+    "通用日期路径应复用绑定当前输入框的 Bootstrap 年/月/日选择，不绕过模型写入");
+  let dateFocusRearms = 0;
+  genericField.hasAttribute = (name) => name === "choose-date";
+  genericField.blur = () => { dateFocusRearms += 1; };
+  assert.equal(await vm.runInContext("setGenericDatePickerValue(genericField, '2022-03-01')", generic), true);
+  assert.equal(dateFocusRearms, 1, "只对声明 choose-date 的焦点触发日历重新激活，防止弹窗关闭后不再打开");
+  const focusOrder = [];
+  generic.MouseEvent = class { constructor(type) { this.type = type; } };
+  genericField.blur = () => focusOrder.push("blur");
+  genericField.focus = () => focusOrder.push("focus");
+  genericField.dispatchEvent = (event) => focusOrder.push(event.type);
+  genericField.click = () => focusOrder.push("click");
+  assert.equal(await vm.runInContext("setGenericDatePickerValue(genericField, '2022-03-01')", generic), true);
+  assert.deepEqual(focusOrder, ["blur", "mousedown", "focus", "mouseup", "click"],
+    "日期必须遵守真实鼠标事件顺序，不能先打开再由 mousedown 关闭");
 
   let displayedMonth = 9;
   let monthClicks = 0;

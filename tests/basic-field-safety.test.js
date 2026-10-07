@@ -129,6 +129,14 @@ let anonymousParent = anonymousGroup;
 for (let i = 0; i < 10; i++) anonymousParent = anonymousParent.append(new Element());
 context.field = anonymousParent.append(new Input());
 assert.equal(vm.runInContext("textOfLabel(field)", context), "民族", "没有标准 form-item 也能读取深层相邻标签");
+const winTalentCell = body.append(new Element("div", "mdf-table-cell"));
+winTalentCell.append(new Element("div", "mdf-table-cell-l", "奖励名称"));
+const alternateInputs = winTalentCell.append(new Element("div", "ipt-item"));
+alternateInputs.append(new Input()); // Hidden model input in the real component.
+alternateInputs.append(new Input()); // Hidden readonly alternative.
+context.field = alternateInputs.append(new Input());
+assert.equal(vm.runInContext("textOfLabel(field)", context), "奖励名称",
+  "同一字段的隐藏备用输入不应阻断可见输入读取自己的标题");
 
 // Do not borrow a neighbouring labelled field, or a committed cascader value.
 const row = body.append(new Element("div", "form-item"));

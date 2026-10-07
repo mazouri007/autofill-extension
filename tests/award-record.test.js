@@ -25,6 +25,8 @@ for (const [label, expected] of [
   ["获奖日期", "awardDate"],
   ["奖励级别", "awardLevel"],
   ["奖励名称", "awardName"],
+  ["奖项", "awardName"],
+  ["奖项类别", null],
   ["说明", "description"],
 ]) {
   context.element = { label };

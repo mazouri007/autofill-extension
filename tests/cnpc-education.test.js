@@ -184,6 +184,9 @@ async function testDates() {
   fixture.sandbox.location.hostname = "job.bankcomm.com";
   assert.equal(await vm.runInContext("setCnpcEducationDateValue(dateInput, '2021-09-01')", fixture.sandbox), false);
   assert.equal(fixture.activations(), previousActivations, "其他站点不应走中石油的日期适配");
+  assert.equal(await vm.runInContext("setBootstrapDatePickerValue(dateInput, '2022-09-24')", fixture.sandbox), true,
+    "同型 Bootstrap 控件可通过公共导航提交，不依赖中石油域名");
+  assert.equal(fixture.modelDate(), "2022-09-24");
   for (const configuration of [{ disabledMonth: 9 }, { disabledDay: 1 }, { noCommit: true },
     { stuckHeader: true }, { rejectOnBlur: true }, { monthCount: 11 }]) {
     const blocked = dateFixture(configuration);
